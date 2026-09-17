@@ -17,7 +17,13 @@ import {
   type IconCandidate,
   type LinkTag,
 } from './logo'
-import { parseEndpointRequest, parseSubscribeRequest, type DeviceKeys } from './validate'
+import {
+  isValidVaultId,
+  parseEndpointRequest,
+  parseSubscribeRequest,
+  parseVaultWrite,
+  type DeviceKeys,
+} from './validate'
 
 export interface Env {
   DB: D1Database
@@ -34,6 +40,7 @@ const DAY_MS = 24 * HOUR_MS
 const STALE_REMINDER_MS = DAY_MS
 /** Приложение синхронизируется при каждом открытии; устройство без синхронизаций полгода считаем удалённым. */
 const STALE_DEVICE_MS = 180 * DAY_MS
+const STALE_VAULT_MS = 365 * DAY_MS
 const TEST_COOLDOWN_MS = 60 * 1000
 const MAX_BODY_BYTES = 128 * 1024
 /** Бесплатный тариф Workers разрешает 50 исходящих запросов за запуск. */
@@ -61,7 +68,7 @@ function corsHeaders(request: Request, env: Env): Record<string, string> | null 
   if (!origin || !allowed.includes(origin)) return null
   return {
     'Access-Control-Allow-Origin': origin,
-    'Access-Control-Allow-Methods': 'POST, DELETE, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Max-Age': '86400',
     Vary: 'Origin',
@@ -165,6 +172,57 @@ async function handleTest(request: Request, env: Env, cors: Record<string, strin
     return json(410, { error: 'subscription expired' }, cors)
   }
   return status >= 200 && status < 300 ? json(200, {}, cors) : json(502, { error: `push service ${status}` }, cors)
+}
+
+interface VaultRow {
+  blob: string
+  version: number
+  updated_at: number
+}
+
+/**
+ * Хранилище синхронизации. Сервер видит только шифротекст: ключ остаётся на устройствах.
+ * Запись проходит, если версия совпала с текущей, иначе 409 и свежая версия в ответе.
+ */
+async function handleVaultRead(request: Request, env: Env, cors: Record<string, string>): Promise<Response> {
+  const id = new URL(request.url).searchParams.get('id')
+  if (!isValidVaultId(id)) return json(400, { error: 'invalid id' }, cors)
+  const row = await env.DB.prepare('SELECT blob, version, updated_at FROM vaults WHERE id = ?1')
+    .bind(id)
+    .first<VaultRow>()
+  if (!row) return json(404, { error: 'empty vault' }, cors)
+  return json(200, { blob: row.blob, version: row.version, updatedAt: row.updated_at }, cors)
+}
+
+async function handleVaultWrite(request: Request, env: Env, cors: Record<string, string>): Promise<Response> {
+  const parsed = parseVaultWrite(await readJson(request))
+  if (!parsed.ok) return json(400, { error: parsed.error }, cors)
+  const { id, blob, version } = parsed.value
+  const now = Date.now()
+
+  const result = await env.DB.prepare(
+    `INSERT INTO vaults (id, blob, version, updated_at) VALUES (?1, ?2, 1, ?3)
+     ON CONFLICT (id) DO UPDATE SET blob = excluded.blob, version = vaults.version + 1, updated_at = excluded.updated_at
+     WHERE vaults.version = ?4`,
+  )
+    .bind(id, blob, now, version)
+    .run()
+
+  if (result.meta.changes === 0) {
+    const current = await env.DB.prepare('SELECT blob, version, updated_at FROM vaults WHERE id = ?1')
+      .bind(id)
+      .first<VaultRow>()
+    return json(409, { blob: current?.blob, version: current?.version ?? 0, updatedAt: current?.updated_at ?? 0 }, cors)
+  }
+  return json(200, { version: version + 1, updatedAt: now }, cors)
+}
+
+async function handleVaultDelete(request: Request, env: Env, cors: Record<string, string>): Promise<Response> {
+  const body = await readJson(request)
+  const id = typeof body === 'object' && body !== null ? (body as { id?: unknown }).id : undefined
+  if (!isValidVaultId(id)) return json(400, { error: 'invalid id' }, cors)
+  await env.DB.prepare('DELETE FROM vaults WHERE id = ?1').bind(id).run()
+  return json(200, {}, cors)
 }
 
 const LOGO_TTL_SECONDS = 7 * 24 * 60 * 60
@@ -297,6 +355,8 @@ async function sendDueReminders(env: Env): Promise<void> {
       'DELETE FROM reminders WHERE endpoint IN (SELECT endpoint FROM devices WHERE updated_at < ?1)',
     ).bind(now - STALE_DEVICE_MS),
     env.DB.prepare('DELETE FROM devices WHERE updated_at < ?1').bind(now - STALE_DEVICE_MS),
+    // Хранилища синхронизации без обновлений год считаем брошенными.
+    env.DB.prepare('DELETE FROM vaults WHERE updated_at < ?1').bind(now - STALE_VAULT_MS),
   ])
 
   const { results } = await env.DB.prepare(
@@ -346,6 +406,9 @@ export default {
       if (pathname === '/api/subscribe' && request.method === 'POST') return await handleSubscribe(request, env, cors)
       if (pathname === '/api/subscribe' && request.method === 'DELETE') return await handleUnsubscribe(request, env, cors)
       if (pathname === '/api/test' && request.method === 'POST') return await handleTest(request, env, cors)
+      if (pathname === '/api/vault' && request.method === 'GET') return await handleVaultRead(request, env, cors)
+      if (pathname === '/api/vault' && request.method === 'PUT') return await handleVaultWrite(request, env, cors)
+      if (pathname === '/api/vault' && request.method === 'DELETE') return await handleVaultDelete(request, env, cors)
     } catch (error) {
       console.error('request failed', error)
       return json(500, { error: 'internal error' }, cors)

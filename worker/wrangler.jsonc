@@ -15,7 +15,7 @@
     }
   ],
   "vars": {
-    "ALLOWED_ORIGINS": "https://ussuqpussu.github.io,http://localhost:5173,http://localhost:4173",
+    "ALLOWED_ORIGINS": "https://ussuqpussu.github.io,http://localhost:5173,http://localhost:4173,http://127.0.0.1:5173,http://127.0.0.1:4173",
     "VAPID_SUBJECT": "https://ussuqpussu.github.io/subscription-tracker/"
   }
   // Секреты: VAPID_PUBLIC_KEY и VAPID_PRIVATE_KEY (`npx wrangler secret put ...`).

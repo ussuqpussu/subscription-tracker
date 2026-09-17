@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { isPushEndpoint, MAX_REMINDERS, parseEndpointRequest, parseSubscribeRequest } from './validate'
+import {
+  isPushEndpoint,
+  isValidVaultId,
+  MAX_REMINDERS,
+  parseEndpointRequest,
+  parseSubscribeRequest,
+  parseVaultWrite,
+} from './validate'
 
 const now = Date.UTC(2026, 8, 17, 12)
 const keys = { p256dh: 'B'.repeat(87), auth: 'a'.repeat(22) }
@@ -62,5 +69,25 @@ describe('запрос подписки', () => {
     )
     expect(parseSubscribeRequest(request({ reminders: [{ ...reminder, title: '' }] }), now).ok).toBe(false)
     expect(parseSubscribeRequest(request({ reminders: [{ ...reminder, body: 'x'.repeat(201) }] }), now).ok).toBe(false)
+  })
+})
+
+describe('хранилище синхронизации', () => {
+  const id = 'a'.repeat(64)
+
+  it('принимает шифротекст с версией', () => {
+    expect(parseVaultWrite({ id, blob: 'AAAA.BBBB', version: 3 })).toEqual({
+      ok: true,
+      value: { id, blob: 'AAAA.BBBB', version: 3 },
+    })
+  })
+
+  it('отклоняет чужой формат', () => {
+    expect(isValidVaultId(id)).toBe(true)
+    expect(isValidVaultId('A'.repeat(64))).toBe(false)
+    expect(parseVaultWrite({ id: 'short', blob: 'AA.BB', version: 0 }).ok).toBe(false)
+    expect(parseVaultWrite({ id, blob: 'без точки', version: 0 }).ok).toBe(false)
+    expect(parseVaultWrite({ id, blob: 'AA.BB', version: -1 }).ok).toBe(false)
+    expect(parseVaultWrite({ id, blob: `${'A'.repeat(600000)}.BB`, version: 0 }).ok).toBe(false)
   })
 })

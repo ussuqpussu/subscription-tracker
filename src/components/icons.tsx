@@ -218,3 +218,11 @@ export function ChartIcon(props: IconProps) {
     </Icon>
   )
 }
+
+export function CloudIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M7.5 18.5h9.2a3.8 3.8 0 0 0 .3-7.6 5.5 5.5 0 0 0-10.6-1A3.8 3.8 0 0 0 7.5 18.5Z" />
+    </Icon>
+  )
+}

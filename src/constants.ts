@@ -5,6 +5,12 @@ export const STORAGE_KEY = 'subscription-tracker:v1'
 /** Режим «глаз закрыт» на главной карточке. */
 export const HIDE_AMOUNTS_KEY = 'subscription-tracker:hide-amounts'
 
+/** Синхронизация: код и версия хранилища. */
+export const SYNC_KEY = 'subscription-tracker:sync'
+
+/** Когда последний раз сохраняли резервную копию. */
+export const LAST_BACKUP_KEY = 'subscription-tracker:last-backup'
+
 /** Последние курсы ЦБ для сводки трат в рублях. */
 export const RATES_KEY = 'subscription-tracker:rates'
 

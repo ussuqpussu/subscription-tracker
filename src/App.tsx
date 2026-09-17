@@ -1,24 +1,27 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
 import styles from './App.module.css'
+import { BackupReminder } from './components/BackupReminder'
 import { BottomBar } from './components/BottomBar'
 import { ConfirmSheet, type ConfirmRequest } from './components/ConfirmSheet'
 import { EmptyState } from './components/EmptyState'
 import { Filters } from './components/Filters'
-import { ArrowDownDocIcon, ArrowUpDocIcon, CalendarPlusIcon, ChartIcon, TrashIcon } from './components/icons'
+import { ArrowDownDocIcon, ArrowUpDocIcon, CalendarPlusIcon, ChartIcon, CloudIcon, TrashIcon } from './components/icons'
 import type { MenuItem } from './components/MoreMenu'
 import { NavBar } from './components/NavBar'
 import { NextPayment } from './components/NextPayment'
 import { NotificationsSheet, type PushMessage } from './components/NotificationsSheet'
 import { SearchField } from './components/SearchField'
 import { StatsSheet } from './components/StatsSheet'
+import { SyncSheet, type SyncMessage } from './components/SyncSheet'
 import { SubscriptionForm, type SubscriptionValue } from './components/SubscriptionForm'
 import { SubscriptionList } from './components/SubscriptionList'
 import { SummaryBar } from './components/SummaryBar'
 import { Toast, type ToastMessage } from './components/Toast'
-import { HIDE_AMOUNTS_KEY, STORAGE_KEY } from './constants'
+import { HIDE_AMOUNTS_KEY, LAST_BACKUP_KEY, STORAGE_KEY } from './constants'
 import { useLocalStorage } from './hooks/useLocalStorage'
 import { usePushSync } from './hooks/usePushSync'
 import { useRates } from './hooks/useRates'
+import { useSync } from './hooks/useSync'
 import { useToday } from './hooks/useToday'
 import { subscriptionsReducer, type SubscriptionsAction } from './state/subscriptionsReducer'
 import type { Subscription } from './types'
@@ -38,6 +41,7 @@ import {
   type PushState,
 } from './utils/push'
 import { normalizeSubscriptions } from './utils/subscriptionSchema'
+import { deleteVault, isSyncAvailable } from './utils/syncApi'
 import {
   collectCategories,
   filterSubscriptions,
@@ -53,6 +57,10 @@ type EditorState = { mode: 'create' } | { mode: 'edit'; id: string } | null
 
 const parseStoredSubscriptions = (raw: unknown) => normalizeSubscriptions(raw).items
 const parseStoredFlag = (raw: unknown) => raw === true
+
+/** Через столько без копии показываем напоминание, «Позже» откладывает на неделю. */
+const BACKUP_REMINDER_MS = 30 * 24 * 60 * 60 * 1000
+const BACKUP_SNOOZE_MS = 7 * 24 * 60 * 60 * 1000
 
 const pushErrorText = (error: unknown) =>
   error instanceof PushError ? error.message : 'Не получилось. Попробуйте ещё раз.'
@@ -78,6 +86,12 @@ export default function App() {
   const [toast, setToast] = useState<ToastMessage | null>(null)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [statsOpen, setStatsOpen] = useState(false)
+  const [syncOpen, setSyncOpen] = useState(false)
+  const [syncBusy, setSyncBusy] = useState(false)
+  const [syncMessage, setSyncMessage] = useState<SyncMessage | null>(null)
+  const [lastBackupAt, setLastBackupAt] = useLocalStorage<number>(LAST_BACKUP_KEY, 0, (raw) =>
+    typeof raw === 'number' ? raw : 0,
+  )
   const [pushState, setPushState] = useState<PushState>(isPushConfigured ? 'off' : 'unconfigured')
   const [pushBusy, setPushBusy] = useState(false)
   const [pushMessage, setPushMessage] = useState<PushMessage | null>(null)
@@ -100,6 +114,44 @@ export default function App() {
     subscriptions.some((item) => isActive(item) && item.currency !== 'RUB'),
     today,
   )
+
+  const showSyncError = useCallback((text: string) => setSyncMessage({ text, tone: 'error' }), [])
+  const sync = useSync(subscriptions, setSubscriptions, today, showSyncError)
+
+  // Копию просим раз в месяц и только пока синхронизация выключена.
+  const needsBackup =
+    subscriptions.length > 0 && sync.state === null && today.getTime() - lastBackupAt > BACKUP_REMINDER_MS
+
+  const handleSyncConnect = (code: string) => {
+    setSyncBusy(true)
+    setSyncMessage(null)
+    sync
+      .resolve(code)
+      .then(async (next) => {
+        // На сервере уже есть список — забираем его, иначе выгружаем свой.
+        const restored = await sync.pull(next)
+        if (!restored) await sync.push(next, subscriptions)
+        sync.setState(next)
+        setSyncMessage({
+          text: restored ? 'Подписки загружены с сервера.' : 'Синхронизация включена.',
+          tone: 'default',
+        })
+      })
+      .catch((error: unknown) =>
+        setSyncMessage({
+          text: error instanceof Error ? error.message : 'Не удалось включить синхронизацию.',
+          tone: 'error',
+        }),
+      )
+      .finally(() => setSyncBusy(false))
+  }
+
+  const handleSyncDisconnect = () => {
+    const current = sync.state
+    sync.setState(null)
+    setSyncMessage({ text: 'Синхронизация выключена на этом устройстве.', tone: 'default' })
+    if (current) void deleteVault(current.vaultId)
+  }
 
   const attention = subscriptions.some((item) => {
     const lamp = getLamp(item, today)
@@ -198,6 +250,7 @@ export default function App() {
       { name: backupFileName(), type: 'application/json', content: createBackup(subscriptions) },
       'Резервная копия сохранена.',
     )
+    setLastBackupAt(Date.now())
   }
 
   const handleRestoreFile = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -298,6 +351,16 @@ export default function App() {
 
   const menuItems: MenuItem[] = [
     {
+      id: 'sync',
+      label: 'Синхронизация',
+      icon: <CloudIcon />,
+      disabled: !isSyncAvailable,
+      onSelect: () => {
+        setSyncMessage(null)
+        setSyncOpen(true)
+      },
+    },
+    {
       id: 'stats',
       label: 'Статистика',
       icon: <ChartIcon />,
@@ -345,6 +408,12 @@ export default function App() {
           <EmptyState variant="empty" onAction={openCreate} />
         ) : (
           <>
+            {needsBackup && (
+              <BackupReminder
+                onBackup={handleBackup}
+                onSnooze={() => setLastBackupAt(Date.now() - BACKUP_REMINDER_MS + BACKUP_SNOOZE_MS)}
+              />
+            )}
             <SummaryBar
               subscriptions={subscriptions}
               today={today}
@@ -415,6 +484,15 @@ export default function App() {
         subscriptions={subscriptions}
         today={today}
         rates={rates}
+      />
+      <SyncSheet
+        open={syncOpen}
+        onClose={() => setSyncOpen(false)}
+        state={sync.state}
+        busy={syncBusy}
+        message={syncMessage}
+        onConnect={handleSyncConnect}
+        onDisconnect={handleSyncDisconnect}
       />
       <ConfirmSheet request={confirm} onClose={() => setConfirm(null)} />
       <Toast toast={toast} onDismiss={dismissToast} />

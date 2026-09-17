@@ -97,3 +97,31 @@ export function parseSubscribeRequest(body: unknown, now: number): Parsed<Subscr
     value: { endpoint: body.endpoint, keys: { p256dh: keys.p256dh, auth: keys.auth }, reminders: parsed },
   }
 }
+
+/** Размер шифротекста: 500 подписок с историей помещаются с запасом. */
+export const MAX_VAULT_BYTES = 512 * 1024
+const VAULT_ID_RE = /^[0-9a-f]{64}$/
+const VAULT_BLOB_RE = /^[A-Za-z0-9+/]+={0,2}\.[A-Za-z0-9+/]+={0,2}$/
+
+export interface VaultWrite {
+  id: string
+  blob: string
+  /** Версия, которая сейчас на сервере по мнению устройства. 0 — записи ещё нет. */
+  version: number
+}
+
+export function isValidVaultId(value: unknown): value is string {
+  return typeof value === 'string' && VAULT_ID_RE.test(value)
+}
+
+export function parseVaultWrite(body: unknown): Parsed<VaultWrite> {
+  if (!isRecord(body)) return fail('invalid body')
+  if (!isValidVaultId(body.id)) return fail('invalid id')
+  if (typeof body.blob !== 'string' || body.blob.length > MAX_VAULT_BYTES || !VAULT_BLOB_RE.test(body.blob)) {
+    return fail('invalid blob')
+  }
+  if (typeof body.version !== 'number' || !Number.isSafeInteger(body.version) || body.version < 0) {
+    return fail('invalid version')
+  }
+  return { ok: true, value: { id: body.id, blob: body.blob, version: body.version } }
+}
