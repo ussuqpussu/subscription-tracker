@@ -10,8 +10,7 @@
     {
       "binding": "DB",
       "database_name": "subscription-push",
-      // Заменить на id из `npx wrangler d1 create subscription-push`.
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "f51d6626-77db-48dd-ab94-3eb53f0b983f",
       "migrations_dir": "migrations"
     }
   ],
