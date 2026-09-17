@@ -3,9 +3,54 @@
   --tile-size: 44px;
   --text-start: calc(16px + var(--tile-size) + 12px);
   position: relative;
+  overflow: hidden;
+}
+
+/* Содержимое строки уезжает вправо и открывает кнопку удаления под собой. */
+.content {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
+  background: var(--surface);
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: transform 0.32s var(--ease-out);
+}
+
+.content[data-revealed='true'] {
+  transform: translateX(96px);
+}
+
+.content[data-dragging='true'] {
+  transition: none;
+}
+
+.deleteAction {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 0 0 20px;
+  border: 0;
+  background: var(--red);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  /* Спрятана, пока строку не тянут: иначе красный край просвечивает сквозь сглаживание. */
+  opacity: 0;
+}
+
+.row:has(> .content[data-dragging='true'], > .content[data-revealed='true']) .deleteAction {
+  opacity: 1;
+}
+
+.deleteAction svg {
+  width: 20px;
+  height: 20px;
 }
 
 .row[data-lamp='yellow'] {
@@ -27,6 +72,7 @@
   top: 0;
   left: var(--text-start);
   right: 0;
+  z-index: 2;
   height: 1px;
   background: var(--separator);
 }

@@ -8,9 +8,17 @@ interface SubscriptionListProps {
   onEdit: (subscription: Subscription) => void
   onExport: (subscription: Subscription) => void
   onMarkPaid: (subscription: Subscription) => void
+  onDelete: (subscription: Subscription) => void
 }
 
-export function SubscriptionList({ subscriptions, today, onEdit, onExport, onMarkPaid }: SubscriptionListProps) {
+export function SubscriptionList({
+  subscriptions,
+  today,
+  onEdit,
+  onExport,
+  onMarkPaid,
+  onDelete,
+}: SubscriptionListProps) {
   return (
     <section className={styles.section} aria-labelledby="list-title">
       <div className={styles.header}>
@@ -28,6 +36,7 @@ export function SubscriptionList({ subscriptions, today, onEdit, onExport, onMar
             onEdit={onEdit}
             onExport={onExport}
             onMarkPaid={onMarkPaid}
+            onDelete={onDelete}
           />
         ))}
       </ul>

@@ -349,6 +349,7 @@ export default function App() {
                 onEdit={(subscription) => setEditor({ mode: 'edit', id: subscription.id })}
                 onExport={handleExport}
                 onMarkPaid={handleMarkPaid}
+                onDelete={requestDelete}
               />
             )}
           </>

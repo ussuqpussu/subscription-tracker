@@ -1,8 +1,9 @@
+import { useRef, useState, type MouseEvent, type PointerEvent } from 'react'
 import type { Subscription } from '../types'
 import { getDaysUntil, getDueDate } from '../utils/dateUtils'
 import { formatDate, formatDueText, formatMoney, formatPeriod, formatStatus } from '../utils/format'
 import { getLamp } from '../utils/subscriptionUtils'
-import { CalendarPlusIcon, CheckIcon } from './icons'
+import { CalendarPlusIcon, CheckIcon, TrashIcon } from './icons'
 import { Logo } from './Logo'
 import { StatusLamp } from './StatusLamp'
 import styles from './SubscriptionRow.module.css'
@@ -13,9 +14,38 @@ interface SubscriptionRowProps {
   onEdit: (subscription: Subscription) => void
   onExport: (subscription: Subscription) => void
   onMarkPaid: (subscription: Subscription) => void
+  onDelete: (subscription: Subscription) => void
 }
 
-export function SubscriptionRow({ subscription, today, onEdit, onExport, onMarkPaid }: SubscriptionRowProps) {
+/** Ширина открытой кнопки «Удалить» — совпадает с CSS. */
+const REVEAL_WIDTH = 96
+/** Палец сдвинулся по горизонтали дальше — это свайп, а не касание или прокрутка. */
+const DRAG_START = 10
+/** Протянули дальше этой доли ширины строки — сразу спрашиваем об удалении. */
+const FULL_SWIPE = 0.6
+
+interface Drag {
+  pointerId: number
+  startX: number
+  startY: number
+  base: number
+  offset: number
+  active: boolean
+}
+
+export function SubscriptionRow({
+  subscription,
+  today,
+  onEdit,
+  onExport,
+  onMarkPaid,
+  onDelete,
+}: SubscriptionRowProps) {
+  const contentRef = useRef<HTMLDivElement>(null)
+  const dragRef = useRef<Drag | null>(null)
+  const suppressClickRef = useRef(false)
+  const [revealed, setRevealed] = useState(false)
+
   const lamp = getLamp(subscription, today)
   const active = subscription.status === 'active'
   const dueDate = getDueDate(subscription)
@@ -35,45 +65,133 @@ export function SubscriptionRow({ subscription, today, onEdit, onExport, onMarkP
     .filter(Boolean)
     .join('. ')
 
+  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return
+    suppressClickRef.current = false
+    const base = revealed ? REVEAL_WIDTH : 0
+    dragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      base,
+      offset: base,
+      active: false,
+    }
+  }
+
+  const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current
+    const content = contentRef.current
+    if (!drag || !content || drag.pointerId !== event.pointerId) return
+    const dx = event.clientX - drag.startX
+    const dy = event.clientY - drag.startY
+    if (!drag.active) {
+      // Вертикальное движение — это прокрутка списка: свайп не начинаем.
+      if (Math.abs(dy) > DRAG_START && Math.abs(dy) > Math.abs(dx)) {
+        dragRef.current = null
+        return
+      }
+      if (Math.abs(dx) < DRAG_START) return
+      drag.active = true
+      content.setPointerCapture(event.pointerId)
+      content.dataset.dragging = 'true'
+    }
+    drag.offset = Math.max(0, drag.base + dx)
+    content.style.transform = `translateX(${drag.offset}px)`
+  }
+
+  const handlePointerEnd = (event: PointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current
+    const content = contentRef.current
+    if (!drag || !content || drag.pointerId !== event.pointerId) return
+    dragRef.current = null
+    if (!drag.active) return
+    // После свайпа браузер может прислать click: он не должен открывать подписку.
+    suppressClickRef.current = true
+    delete content.dataset.dragging
+    content.style.transform = ''
+    const fullSwipe = event.type === 'pointerup' && drag.offset > content.offsetWidth * FULL_SWIPE
+    setRevealed(!fullSwipe && drag.offset > REVEAL_WIDTH / 2)
+    if (fullSwipe) onDelete(subscription)
+  }
+
+  const handleClickCapture = (event: MouseEvent<HTMLDivElement>) => {
+    if (suppressClickRef.current) {
+      event.preventDefault()
+      event.stopPropagation()
+      suppressClickRef.current = false
+    } else if (revealed) {
+      // Касание по открытой строке закрывает кнопку удаления, а не открывает подписку.
+      event.preventDefault()
+      event.stopPropagation()
+      setRevealed(false)
+    }
+  }
+
   return (
     <li className={styles.row} data-lamp={lamp}>
-      <button type="button" className={styles.main} aria-label={label} onClick={() => onEdit(subscription)}>
-        <Logo subscription={subscription} className={styles.tile} />
-        <span className={styles.text}>
-          <span className={styles.name}>{subscription.name}</span>
-          <span className={styles.due}>
-            <StatusLamp lamp={lamp} />
-            <span className={styles.dueText}>{dueText}</span>
-          </span>
-          {(active || subscription.category) && (
-            <span className={styles.meta}>
-              {[active ? dateText : '', subscription.category].filter(Boolean).join(' · ')}
-            </span>
-          )}
-        </span>
-        <span className={styles.money}>
-          <span className={`tabular ${styles.price}`}>{price}</span>
-          <span className={styles.period}>{period}</span>
-        </span>
-      </button>
-
       <button
         type="button"
-        className={`icon-button ${styles.export}`}
-        aria-label={`Добавить «${subscription.name}» в календарь`}
-        onClick={() => onExport(subscription)}
+        className={styles.deleteAction}
+        tabIndex={revealed ? 0 : -1}
+        aria-hidden={!revealed}
+        onClick={() => {
+          setRevealed(false)
+          onDelete(subscription)
+        }}
       >
-        <CalendarPlusIcon />
+        <TrashIcon />
+        Удалить
       </button>
 
-      {needsPayment && (
-        <div className={styles.payRow}>
-          <button type="button" className={`glass ${styles.pay}`} onClick={() => onMarkPaid(subscription)}>
-            <CheckIcon />
-            Оплачено
-          </button>
-        </div>
-      )}
+      <div
+        ref={contentRef}
+        className={styles.content}
+        data-revealed={revealed}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerEnd}
+        onPointerCancel={handlePointerEnd}
+        onClickCapture={handleClickCapture}
+      >
+        <button type="button" className={styles.main} aria-label={label} onClick={() => onEdit(subscription)}>
+          <Logo subscription={subscription} className={styles.tile} />
+          <span className={styles.text}>
+            <span className={styles.name}>{subscription.name}</span>
+            <span className={styles.due}>
+              <StatusLamp lamp={lamp} />
+              <span className={styles.dueText}>{dueText}</span>
+            </span>
+            {(active || subscription.category) && (
+              <span className={styles.meta}>
+                {[active ? dateText : '', subscription.category].filter(Boolean).join(' · ')}
+              </span>
+            )}
+          </span>
+          <span className={styles.money}>
+            <span className={`tabular ${styles.price}`}>{price}</span>
+            <span className={styles.period}>{period}</span>
+          </span>
+        </button>
+
+        <button
+          type="button"
+          className={`icon-button ${styles.export}`}
+          aria-label={`Добавить «${subscription.name}» в календарь`}
+          onClick={() => onExport(subscription)}
+        >
+          <CalendarPlusIcon />
+        </button>
+
+        {needsPayment && (
+          <div className={styles.payRow}>
+            <button type="button" className={`glass ${styles.pay}`} onClick={() => onMarkPaid(subscription)}>
+              <CheckIcon />
+              Оплачено
+            </button>
+          </div>
+        )}
+      </div>
     </li>
   )
 }
