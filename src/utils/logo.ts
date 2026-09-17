@@ -42,11 +42,20 @@ export function isValidLogo(value: unknown): value is string {
   return typeof value === 'string' && value.length <= MAX_LOGO_LENGTH && LOGO_RE.test(value)
 }
 
+/** Логотип мельче этого расплывается в плитке 44 pt на экране Retina: вместо него показываем букву. */
+export const MIN_LOGO_SIZE = 96
+
+export interface LogoSource {
+  src: string
+  /** Минимальная ширина загруженной картинки; 0 — картинка уже проверена сервером. */
+  minWidth: number
+}
+
 /**
- * Адреса логотипа сайта от лучшего к запасному: сначала сервер приложения ищет самую чёткую
- * иконку на самом сайте (SVG, apple-touch-icon, manifest), затем значок из сервиса Google.
+ * Откуда брать логотип сайта. Сервер приложения сам ищет чёткую иконку (SVG или от 96 px) на сайте,
+ * на основном домене и у Google. Без сервера — значок Google, если он достаточно крупный.
  */
-export function getSiteLogoUrls(url: string, apiUrl: string): string[] {
+export function getSiteLogoSources(url: string, apiUrl: string): LogoSource[] {
   let host: string
   try {
     host = new URL(url).hostname
@@ -54,6 +63,7 @@ export function getSiteLogoUrls(url: string, apiUrl: string): string[] {
     return []
   }
   const encoded = encodeURIComponent(host)
-  const google = `https://www.google.com/s2/favicons?sz=128&domain=${encoded}`
-  return apiUrl ? [`${apiUrl}/api/logo?host=${encoded}`, google] : [google]
+  // v=3 — сбрасывает кэш браузера: раньше сервер мог отдать мелкую иконку.
+  if (apiUrl) return [{ src: `${apiUrl}/api/logo?host=${encoded}&v=3`, minWidth: 0 }]
+  return [{ src: `https://www.google.com/s2/favicons?sz=128&domain=${encoded}`, minWidth: MIN_LOGO_SIZE }]
 }

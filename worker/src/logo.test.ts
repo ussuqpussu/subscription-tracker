@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { iconsFromLinks, iconsFromManifest, isValidHost, parseSizes, rankIcons, SVG_SIZE } from './logo'
+import { iconsFromLinks, iconsFromManifest, imageSize, isValidHost, parentHost, parseSizes, rankIcons, SVG_SIZE } from './logo'
 
 describe('домен для поиска логотипа', () => {
   it('принимает обычные домены', () => {
@@ -69,5 +69,36 @@ describe('иконки сайта', () => {
       { url: 'c', size: 512 },
       { url: 'b', size: 192 },
     ])
+  })
+})
+
+describe('настоящий размер картинки', () => {
+  const bytes = (...parts: (number[] | string)[]) =>
+    Uint8Array.from(parts.flatMap((part) => (typeof part === 'string' ? [...part].map((c) => c.charCodeAt(0)) : part)))
+  const be32 = (n: number) => [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255]
+  const le16 = (n: number) => [n & 255, (n >>> 8) & 255]
+
+  it('PNG, GIF и ICO', () => {
+    expect(imageSize(bytes([0x89], 'PNG', [13, 10, 26, 10], be32(13), 'IHDR', be32(512), be32(480)))).toBe(480)
+    expect(imageSize(bytes('GIF89a', le16(48), le16(48)))).toBe(48)
+    const ico = bytes(le16(0), le16(1), le16(2), [16, 16], new Array(14).fill(0), [0, 0], new Array(14).fill(0))
+    expect(imageSize(ico)).toBe(256)
+  })
+
+  it('JPEG и WebP', () => {
+    const jpeg = bytes([0xff, 0xd8, 0xff, 0xe0], [0, 4], [0, 0], [0xff, 0xc0], [0, 17, 8], [0, 120], [0, 160])
+    expect(imageSize(jpeg)).toBe(120)
+    const vp8x = bytes('RIFF', [0, 0, 0, 0], 'WEBP', 'VP8X', new Array(8).fill(0), [199, 0, 0], [99, 0, 0])
+    expect(imageSize(vp8x)).toBe(100)
+  })
+
+  it('неизвестный формат', () => {
+    expect(imageSize(bytes('<svg'))).toBeNull()
+  })
+
+  it('родительский домен', () => {
+    expect(parentHost('plus.yandex.ru')).toBe('yandex.ru')
+    expect(parentHost('www.netflix.com')).toBe('netflix.com')
+    expect(parentHost('ya.ru')).toBeNull()
   })
 })

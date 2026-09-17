@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { API_URL } from '../config'
 import type { Subscription } from '../types'
 import { getInitial } from '../utils/format'
-import { getSiteLogoUrls } from '../utils/logo'
+import { getSiteLogoSources, type LogoSource } from '../utils/logo'
 import styles from './Logo.module.css'
 
 interface LogoProps {
@@ -10,17 +10,15 @@ interface LogoProps {
   className?: string
 }
 
-/** Сервис Google отдаёт глобус 16×16, если у сайта нет значка: такой считаем отсутствующим. */
-const MIN_SITE_ICON_SIZE = 17
-
 /**
- * Плитка-логотип: свой логотип → чёткая иконка с сайта → значок Google → первая буква названия.
- * Если картинка не загрузилась, берётся следующий источник. Размер задаёт родитель через --logo-size.
+ * Плитка-логотип: свой логотип → чёткая иконка сайта → первая буква названия.
+ * Если картинка не загрузилась или слишком мелкая, берётся следующий источник.
+ * Размер задаёт родитель через --logo-size.
  */
 export function Logo({ subscription, className }: LogoProps) {
   const { name, url, logo } = subscription
-  const sources = logo ? [logo] : url ? getSiteLogoUrls(url, API_URL) : []
-  const sourcesKey = sources.join('\n')
+  const sources: LogoSource[] = logo ? [{ src: logo, minWidth: 0 }] : url ? getSiteLogoSources(url, API_URL) : []
+  const sourcesKey = sources.map((source) => source.src).join('\n')
   // Номер источника привязан к списку: сменилась ссылка — перебор начинается заново.
   const [attempt, setAttempt] = useState({ key: sourcesKey, index: 0 })
   const index = attempt.key === sourcesKey ? attempt.index : 0
@@ -32,16 +30,16 @@ export function Logo({ subscription, className }: LogoProps) {
     <span className={`${styles.logo} ${className ?? ''}`} data-kind={kind} aria-hidden="true">
       {source ? (
         <img
-          key={source}
+          key={source.src}
           className={styles.image}
-          src={source}
+          src={source.src}
           alt=""
           decoding="async"
           referrerPolicy="no-referrer"
           draggable={false}
           onError={tryNext}
           onLoad={(event) => {
-            if (!logo && event.currentTarget.naturalWidth < MIN_SITE_ICON_SIZE) tryNext()
+            if (event.currentTarget.naturalWidth < source.minWidth) tryNext()
           }}
         />
       ) : (

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getDisplayHost, getSiteLogoUrls, isValidLogo, MAX_LOGO_LENGTH, normalizeUrl } from './logo'
+import { getDisplayHost, getSiteLogoSources, isValidLogo, MAX_LOGO_LENGTH, MIN_LOGO_SIZE, normalizeUrl } from './logo'
 
 describe('ссылка на сайт', () => {
   it('дописывает https и нормализует адрес', () => {
@@ -20,13 +20,13 @@ describe('ссылка на сайт', () => {
 
   it('подпись и адрес значка', () => {
     expect(getDisplayHost('https://www.kinopoisk.ru/subscriptions')).toBe('kinopoisk.ru')
-    const google = 'https://www.google.com/s2/favicons?sz=128&domain=www.kinopoisk.ru'
-    expect(getSiteLogoUrls('https://www.kinopoisk.ru/x', 'https://api.example.dev')).toEqual([
-      'https://api.example.dev/api/logo?host=www.kinopoisk.ru',
-      google,
+    expect(getSiteLogoSources('https://www.kinopoisk.ru/x', 'https://api.example.dev')).toEqual([
+      { src: 'https://api.example.dev/api/logo?host=www.kinopoisk.ru&v=3', minWidth: 0 },
     ])
-    expect(getSiteLogoUrls('https://www.kinopoisk.ru/x', '')).toEqual([google])
-    expect(getSiteLogoUrls('не ссылка', '')).toEqual([])
+    expect(getSiteLogoSources('https://www.kinopoisk.ru/x', '')).toEqual([
+      { src: 'https://www.google.com/s2/favicons?sz=128&domain=www.kinopoisk.ru', minWidth: MIN_LOGO_SIZE },
+    ])
+    expect(getSiteLogoSources('не ссылка', '')).toEqual([])
   })
 })
 

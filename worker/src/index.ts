@@ -8,8 +8,11 @@ import { buildPushPayload, type PushSubscription } from '@block65/webcrypto-web-
 import {
   iconsFromLinks,
   iconsFromManifest,
+  imageSize,
   isValidHost,
   MAX_ICON_BYTES,
+  MIN_CRISP_SIZE,
+  parentHost,
   rankIcons,
   type IconCandidate,
   type LinkTag,
@@ -165,10 +168,10 @@ async function handleTest(request: Request, env: Env, cors: Record<string, strin
 }
 
 const LOGO_TTL_SECONDS = 7 * 24 * 60 * 60
-const LOGO_MISS_TTL_SECONDS = 24 * 60 * 60
+const LOGO_MISS_TTL_SECONDS = 60 * 60
 const LOGO_FETCH_TIMEOUT_MS = 5000
 /** Сколько лучших кандидатов пробуем скачать: у бесплатного тарифа 50 исходящих запросов. */
-const LOGO_MAX_ATTEMPTS = 4
+const LOGO_MAX_ATTEMPTS = 8
 const BOT_HEADERS = { 'User-Agent': 'Mozilla/5.0 (compatible; SubscriptionTrackerLogo/1.0)' }
 
 function fetchWithTimeout(url: string, accept: string): Promise<Response> {
@@ -179,8 +182,14 @@ function fetchWithTimeout(url: string, accept: string): Promise<Response> {
   })
 }
 
+/** Иконки из разметки и manifest главной страницы домена. Ошибка сети — пустой список. */
 async function collectIcons(host: string): Promise<IconCandidate[]> {
-  const page = await fetchWithTimeout(`https://${host}/`, 'text/html')
+  let page: Response
+  try {
+    page = await fetchWithTimeout(`https://${host}/`, 'text/html')
+  } catch {
+    return []
+  }
   const pageUrl = page.url || `https://${host}/`
   const links: LinkTag[] = []
   let manifestHref: string | null = null
@@ -211,16 +220,24 @@ async function collectIcons(host: string): Promise<IconCandidate[]> {
   }
   // Многие сайты кладут иконку по стандартному адресу, не объявляя её в разметке.
   icons.push({ url: new URL('/apple-touch-icon.png', pageUrl).href, size: 180 })
-  return rankIcons(icons)
+  return icons
 }
 
+/** Значок из индекса Google в высоком разрешении: если у Google есть крупная версия, она чёткая. */
+function googleIcon(host: string): IconCandidate {
+  const url = `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=256&url=https://${host}`
+  return { url, size: 256 }
+}
+
+/** Скачивает иконку и отдаёт её, только если она по-настоящему чёткая: SVG или от 96 px. */
 async function fetchIcon(url: string): Promise<Response | null> {
   try {
     const response = await fetchWithTimeout(url, 'image/*')
-    const type = response.headers.get('Content-Type') ?? ''
+    const type = (response.headers.get('Content-Type') ?? '').split(';')[0].trim()
     if (!response.ok || !type.startsWith('image/')) return null
     const body = await response.arrayBuffer()
     if (body.byteLength === 0 || body.byteLength > MAX_ICON_BYTES) return null
+    if (type !== 'image/svg+xml' && (imageSize(new Uint8Array(body)) ?? 0) < MIN_CRISP_SIZE) return null
     return new Response(body, {
       headers: {
         'Content-Type': type,
@@ -238,19 +255,25 @@ async function fetchIcon(url: string): Promise<Response | null> {
 
 /**
  * GET /api/logo?host=kinopoisk.ru — самая чёткая иконка сайта.
- * Запрос идёт из <img>, поэтому без проверки Origin. Ответы кэшируются на неделю, промахи — на сутки.
+ * Запрос идёт из <img>, поэтому без проверки Origin. Ответы кэшируются на неделю, промахи — на час.
  */
 async function handleLogo(request: Request, ctx: ExecutionContext): Promise<Response> {
   const host = new URL(request.url).searchParams.get('host')
   if (!isValidHost(host)) return new Response('invalid host', { status: 400 })
 
-  const cacheKey = new Request(`https://logo-cache.internal/${host}`)
+  // Версия в ключе: при смене правил выбора иконки старый кэш не используется.
+  const cacheKey = new Request(`https://logo-cache.internal/v3/${host}`)
   const cached = await caches.default.match(cacheKey)
   if (cached) return cached
 
   let response: Response | null = null
   try {
-    const icons = await collectIcons(host)
+    // Порядок: иконки сайта → иконки основного домена (plus.yandex.ru → yandex.ru) → крупный значок Google.
+    // По три лучших с каждого домена, чтобы до значка Google очередь дошла в пределах лимита запросов.
+    const parent = parentHost(host)
+    const own = rankIcons(await collectIcons(host)).slice(0, 3)
+    const inherited = parent ? rankIcons(await collectIcons(parent)).slice(0, 3) : []
+    const icons = [...own, ...inherited, googleIcon(host), ...(parent ? [googleIcon(parent)] : [])]
     for (const icon of icons.slice(0, LOGO_MAX_ATTEMPTS)) {
       response = await fetchIcon(icon.url)
       if (response) break
