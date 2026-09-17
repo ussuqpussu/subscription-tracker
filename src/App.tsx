@@ -445,19 +445,15 @@ export default function App() {
                 onExport={handleExport}
                 onMarkPaid={handleMarkPaid}
                 onDelete={requestDelete}
+                onFilters={() => setFiltersOpen(true)}
+                filtersActive={filtersActive}
               />
             )}
           </>
         )}
       </main>
 
-      <BottomBar
-        tab={subscriptions.length > 0 ? tab : null}
-        onTabChange={setTab}
-        onFilters={() => setFiltersOpen(true)}
-        filtersActive={filtersActive}
-        onAdd={openCreate}
-      />
+      <BottomBar tab={subscriptions.length > 0 ? tab : null} onTabChange={setTab} onAdd={openCreate} />
 
       <SubscriptionForm
         open={formOpen}

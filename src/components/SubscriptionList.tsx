@@ -1,4 +1,5 @@
 import type { Subscription } from '../types'
+import { SlidersIcon } from './icons'
 import styles from './SubscriptionList.module.css'
 import { SubscriptionRow } from './SubscriptionRow'
 
@@ -9,6 +10,9 @@ interface SubscriptionListProps {
   onExport: (subscription: Subscription) => void
   onMarkPaid: (subscription: Subscription) => void
   onDelete: (subscription: Subscription) => void
+  onFilters: () => void
+  /** Фильтр по статусу или категории отличается от «все». */
+  filtersActive: boolean
 }
 
 export function SubscriptionList({
@@ -18,6 +22,8 @@ export function SubscriptionList({
   onExport,
   onMarkPaid,
   onDelete,
+  onFilters,
+  filtersActive,
 }: SubscriptionListProps) {
   return (
     <section className={styles.section} aria-labelledby="list-title">
@@ -26,6 +32,15 @@ export function SubscriptionList({
           Подписки
         </h2>
         <span className={`tabular ${styles.count}`}>{subscriptions.length}</span>
+        <button
+          type="button"
+          className={`glass ${styles.filters}`}
+          aria-label="Фильтры списка"
+          data-active={filtersActive}
+          onClick={onFilters}
+        >
+          <SlidersIcon />
+        </button>
       </div>
       <ul className={`card ${styles.list}`} aria-labelledby="list-title">
         {subscriptions.map((subscription) => (

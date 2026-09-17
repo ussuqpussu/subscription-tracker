@@ -5,9 +5,8 @@
 
 .header {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
+  align-items: center;
+  gap: 8px;
   padding: 0 4px;
 }
 
@@ -18,9 +17,45 @@
 }
 
 .count {
+  flex: 1;
   color: var(--label-secondary);
   font-size: 13px;
   font-weight: 500;
+}
+
+/* Стеклянная кнопка фильтров рядом с заголовком списка. */
+.filters {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  color: var(--label);
+  transition: transform 0.3s var(--ease-spring);
+}
+
+.filters svg {
+  width: 20px;
+  height: 20px;
+}
+
+.filters:active {
+  transform: scale(0.92);
+}
+
+.filters[data-active='true']::after {
+  content: '';
+  position: absolute;
+  top: 7px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid #0d0d0f;
+  border-radius: 50%;
+  background: var(--accent);
 }
 
 /* Один блок со строками и тонкими разделителями, как список транзакций. */

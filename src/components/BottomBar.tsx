@@ -1,6 +1,6 @@
 import { useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from 'react'
 import styles from './BottomBar.module.css'
-import { CalendarIcon, ChartIcon, ListIcon, PlusIcon, SlidersIcon } from './icons'
+import { CalendarIcon, ChartIcon, ListIcon, PlusIcon } from './icons'
 
 export type AppTab = 'home' | 'stats' | 'calendar'
 
@@ -19,9 +19,6 @@ interface BottomBarProps {
   /** null — разделы скрыты (список пуст), остаётся только кнопка «+». */
   tab: AppTab | null
   onTabChange: (tab: AppTab) => void
-  onFilters: () => void
-  /** Фильтр по статусу или категории отличается от «все». */
-  filtersActive: boolean
   onAdd: () => void
 }
 
@@ -33,9 +30,9 @@ interface Drag {
 
 /**
  * Плавающая стеклянная панель разделов в духе Telegram: выбранный раздел подсвечивает
- * стеклянная линза, её можно вести пальцем. Слева — фильтры списка, справа — добавление.
+ * стеклянная линза, её можно вести пальцем. Справа — кнопка добавления подписки.
  */
-export function BottomBar({ tab, onTabChange, onFilters, filtersActive, onAdd }: BottomBarProps) {
+export function BottomBar({ tab, onTabChange, onAdd }: BottomBarProps) {
   const navRef = useRef<HTMLElement>(null)
   const dragRef = useRef<Drag | null>(null)
   // Во время перетаскивания: смещение линзы в px и раздел под пальцем.
@@ -91,18 +88,6 @@ export function BottomBar({ tab, onTabChange, onFilters, filtersActive, onAdd }:
 
   return (
     <div className={styles.dock}>
-      {tab === 'home' && (
-        <button
-          type="button"
-          className={`glass ${styles.round}`}
-          aria-label="Фильтры списка"
-          data-active={filtersActive}
-          onClick={onFilters}
-        >
-          <SlidersIcon />
-        </button>
-      )}
-
       {tab !== null && (
         <nav
           ref={navRef}
