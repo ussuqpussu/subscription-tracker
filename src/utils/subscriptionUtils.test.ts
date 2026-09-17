@@ -166,6 +166,21 @@ describe('список', () => {
     expect(filterSubscriptions(items, { status: 'all', category: 'МУЗЫКА' }).map((i) => i.id)).toEqual(['1', '3'])
     expect(filterSubscriptions(items, { status: 'active', category: 'Кино' })).toEqual([])
   })
+
+  it('поиск по названию, категории и заметкам', () => {
+    const items = [
+      sub({ id: '1', name: 'Кинопоиск', category: 'Кино' }),
+      sub({ id: '2', name: 'Spotify', category: 'Музыка', notes: 'семейный тариф' }),
+    ]
+    const found = (query: string) =>
+      filterSubscriptions(items, { status: 'all', category: null, query }).map((item) => item.id)
+    expect(found('кино')).toEqual(['1'])
+    expect(found('spot')).toEqual(['2'])
+    expect(found('семейный тариф')).toEqual(['2'])
+    expect(found('  МУЗ  ')).toEqual(['2'])
+    expect(found('нет такого')).toEqual([])
+    expect(found('   ')).toEqual(['1', '2'])
+  })
 })
 
 describe('сводка', () => {

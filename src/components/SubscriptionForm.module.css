@@ -263,6 +263,40 @@
   font-size: 13px;
 }
 
+/* Готовые сервисы: ряд с переносом, чтобы был виден весь список. */
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.preset {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 4px 14px 4px 6px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--label);
+  font-size: 14px;
+  font-weight: 500;
+  transition: transform 0.18s var(--ease-out);
+}
+
+.preset:active {
+  transform: scale(0.95);
+}
+
+.presetLogo {
+  --logo-size: 30px;
+}
+
+.presetName {
+  white-space: nowrap;
+}
+
 .logoActions {
   display: flex;
   flex-wrap: wrap;

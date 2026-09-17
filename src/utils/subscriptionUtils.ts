@@ -89,6 +89,16 @@ export type StatusFilter = Status | 'all'
 export interface Filters {
   status: StatusFilter
   category: string | null
+  /** Поиск по названию, категории и заметкам. Пусто — без поиска. */
+  query?: string
+}
+
+/** Поисковый запрос: без регистра и лишних пробелов. */
+function matchesQuery(subscription: Subscription, query: string): boolean {
+  const haystack = [subscription.name, subscription.category, subscription.notes ?? '']
+    .join(' ')
+    .toLocaleLowerCase('ru')
+  return query.split(/s+/).every((word) => haystack.includes(word))
 }
 
 export function filterSubscriptions(
@@ -96,10 +106,12 @@ export function filterSubscriptions(
   filters: Filters,
 ): Subscription[] {
   const categoryKey = filters.category?.trim().toLocaleLowerCase('ru')
+  const query = filters.query?.trim().toLocaleLowerCase('ru') ?? ''
   return subscriptions.filter(
     (item) =>
       (filters.status === 'all' || item.status === filters.status) &&
-      (!categoryKey || item.category.trim().toLocaleLowerCase('ru') === categoryKey),
+      (!categoryKey || item.category.trim().toLocaleLowerCase('ru') === categoryKey) &&
+      (!query || matchesQuery(item, query)),
   )
 }
 

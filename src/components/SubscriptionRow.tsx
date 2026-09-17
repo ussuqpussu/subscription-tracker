@@ -17,7 +17,7 @@ interface SubscriptionRowProps {
   onDelete: (subscription: Subscription) => void
 }
 
-/** Ширина открытой кнопки удаления справа — совпадает с CSS. */
+/** Ширина открытой кнопки действия — совпадает с CSS. */
 const REVEAL_WIDTH = 80
 /** Палец сдвинулся по горизонтали дальше — это свайп, а не касание или прокрутка. */
 const DRAG_START = 10
@@ -44,7 +44,8 @@ export function SubscriptionRow({
   const contentRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<Drag | null>(null)
   const suppressClickRef = useRef(false)
-  const [revealed, setRevealed] = useState(false)
+  /** Какое действие открыто свайпом: удаление справа или отметка оплаты слева. */
+  const [revealed, setRevealed] = useState<'none' | 'delete' | 'paid'>('none')
 
   const lamp = getLamp(subscription, today)
   const active = subscription.status === 'active'
@@ -68,8 +69,8 @@ export function SubscriptionRow({
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (event.pointerType === 'mouse' && event.button !== 0) return
     suppressClickRef.current = false
-    // Строка уезжает влево: смещение отрицательное.
-    const base = revealed ? -REVEAL_WIDTH : 0
+    // Влево — удаление (смещение отрицательное), вправо — отметка оплаты.
+    const base = revealed === 'delete' ? -REVEAL_WIDTH : revealed === 'paid' ? REVEAL_WIDTH : 0
     dragRef.current = {
       pointerId: event.pointerId,
       startX: event.clientX,
@@ -97,7 +98,11 @@ export function SubscriptionRow({
       content.setPointerCapture(event.pointerId)
       content.dataset.dragging = 'true'
     }
-    drag.offset = Math.min(0, drag.base + dx)
+    // Вправо строка тянется, только если платёж можно отметить оплаченным.
+    const offset = drag.base + dx
+    drag.offset = needsPayment ? offset : Math.min(0, offset)
+    // Показываем кнопку той стороны, в которую тянут.
+    content.dataset.direction = drag.offset < 0 ? 'delete' : 'paid'
     content.style.transform = `translateX(${drag.offset}px)`
   }
 
@@ -110,11 +115,15 @@ export function SubscriptionRow({
     // После свайпа браузер может прислать click: он не должен открывать подписку.
     suppressClickRef.current = true
     delete content.dataset.dragging
+    delete content.dataset.direction
     content.style.transform = ''
-    const distance = -drag.offset
+    const distance = Math.abs(drag.offset)
+    const action = drag.offset < 0 ? 'delete' : 'paid'
     const fullSwipe = event.type === 'pointerup' && distance > content.offsetWidth * FULL_SWIPE
-    setRevealed(!fullSwipe && distance > REVEAL_WIDTH / 2)
-    if (fullSwipe) onDelete(subscription)
+    setRevealed(!fullSwipe && distance > REVEAL_WIDTH / 2 ? action : 'none')
+    if (!fullSwipe) return
+    if (action === 'delete') onDelete(subscription)
+    else onMarkPaid(subscription)
   }
 
   const handleClickCapture = (event: MouseEvent<HTMLDivElement>) => {
@@ -122,24 +131,40 @@ export function SubscriptionRow({
       event.preventDefault()
       event.stopPropagation()
       suppressClickRef.current = false
-    } else if (revealed) {
-      // Касание по открытой строке закрывает кнопку удаления, а не открывает подписку.
+    } else if (revealed !== 'none') {
+      // Касание по открытой строке закрывает действие, а не открывает подписку.
       event.preventDefault()
       event.stopPropagation()
-      setRevealed(false)
+      setRevealed('none')
     }
   }
 
   return (
     <li className={styles.row} data-lamp={lamp}>
+      {needsPayment && (
+        <button
+          type="button"
+          className={styles.payAction}
+          aria-label={`Отметить «${subscription.name}» оплаченной`}
+          tabIndex={revealed === 'paid' ? 0 : -1}
+          aria-hidden={revealed !== 'paid'}
+          onClick={() => {
+            setRevealed('none')
+            onMarkPaid(subscription)
+          }}
+        >
+          <CheckIcon />
+        </button>
+      )}
+
       <button
         type="button"
         className={styles.deleteAction}
         aria-label={`Удалить «${subscription.name}»`}
-        tabIndex={revealed ? 0 : -1}
-        aria-hidden={!revealed}
+        tabIndex={revealed === 'delete' ? 0 : -1}
+        aria-hidden={revealed !== 'delete'}
         onClick={() => {
-          setRevealed(false)
+          setRevealed('none')
           onDelete(subscription)
         }}
       >
@@ -149,7 +174,7 @@ export function SubscriptionRow({
       <div
         ref={contentRef}
         className={styles.content}
-        data-revealed={revealed}
+        data-revealed={revealed === 'none' ? undefined : revealed}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerEnd}

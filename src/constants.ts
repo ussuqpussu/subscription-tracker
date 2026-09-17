@@ -52,3 +52,34 @@ export const MAX_REMINDER_DAYS = 365
 export const MAX_CUSTOM_DAYS = 3650
 export const MIN_YEAR = 1970
 export const MAX_YEAR = 2100
+
+/** Готовые сервисы для быстрого добавления: подставляют название, сайт и категорию. */
+export interface ServicePreset {
+  name: string
+  /** Адрес, с которого берётся логотип. Выбран тот, где есть чёткая иконка. */
+  url: string
+  category: string
+}
+
+export const SERVICE_PRESETS: readonly ServicePreset[] = [
+  { name: 'Яндекс Плюс', url: 'https://ya.ru/', category: 'Развлечения' },
+  { name: 'Кинопоиск', url: 'https://www.kinopoisk.ru/', category: 'Кино' },
+  { name: 'Яндекс Музыка', url: 'https://music.yandex.ru/', category: 'Музыка' },
+  { name: 'VK Музыка', url: 'https://vk.com/music', category: 'Музыка' },
+  { name: 'Spotify', url: 'https://open.spotify.com/', category: 'Музыка' },
+  { name: 'YouTube Premium', url: 'https://www.youtube.com/', category: 'Видео' },
+  { name: 'Netflix', url: 'https://help.netflix.com/', category: 'Кино' },
+  { name: 'Okko', url: 'https://okko.tv/', category: 'Кино' },
+  { name: 'Иви', url: 'https://www.ivi.ru/', category: 'Кино' },
+  { name: 'Wink', url: 'https://wink.ru/', category: 'Кино' },
+  { name: 'Литрес', url: 'https://www.litres.ru/', category: 'Книги' },
+  { name: 'СберПрайм', url: 'https://sber.ru/prime', category: 'Развлечения' },
+  { name: 'iCloud+', url: 'https://www.icloud.com/', category: 'Облако' },
+  { name: 'Google One', url: 'https://one.google.com/', category: 'Облако' },
+  { name: 'Telegram Premium', url: 'https://telegram.org/', category: 'Связь' },
+  { name: 'ChatGPT Plus', url: 'https://chatgpt.com/', category: 'Работа' },
+  { name: 'Notion', url: 'https://www.notion.so/', category: 'Работа' },
+  { name: 'GitHub', url: 'https://github.com/', category: 'Работа' },
+  { name: 'Duolingo', url: 'https://www.duolingo.com/', category: 'Учёба' },
+  { name: 'PlayStation Plus', url: 'https://www.playstation.com/', category: 'Игры' },
+]

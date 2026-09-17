@@ -9,6 +9,7 @@ import type { MenuItem } from './components/MoreMenu'
 import { NavBar } from './components/NavBar'
 import { NextPayment } from './components/NextPayment'
 import { NotificationsSheet, type PushMessage } from './components/NotificationsSheet'
+import { SearchField } from './components/SearchField'
 import { SubscriptionForm, type SubscriptionValue } from './components/SubscriptionForm'
 import { SubscriptionList } from './components/SubscriptionList'
 import { SummaryBar } from './components/SummaryBar'
@@ -39,6 +40,7 @@ import { normalizeSubscriptions } from './utils/subscriptionSchema'
 import {
   collectCategories,
   filterSubscriptions,
+  countOverdue,
   getLamp,
   isActive,
   markPaid,
@@ -69,6 +71,7 @@ export default function App() {
   const [hideAmounts, setHideAmounts] = useLocalStorage(HIDE_AMOUNTS_KEY, false, parseStoredFlag)
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
   const [editor, setEditor] = useState<EditorState>(null)
   const [confirm, setConfirm] = useState<ConfirmRequest | null>(null)
   const [toast, setToast] = useState<ToastMessage | null>(null)
@@ -84,10 +87,10 @@ export default function App() {
   const visibleSubscriptions = useMemo(
     () =>
       sortSubscriptions(
-        filterSubscriptions(subscriptions, { status: statusFilter, category: activeCategory }),
+        filterSubscriptions(subscriptions, { status: statusFilter, category: activeCategory, query: searchQuery }),
         today,
       ),
-    [subscriptions, statusFilter, activeCategory, today],
+    [subscriptions, statusFilter, activeCategory, searchQuery, today],
   )
 
   // Курс нужен, только если есть активные подписки не в рублях.
@@ -100,6 +103,17 @@ export default function App() {
     const lamp = getLamp(item, today)
     return lamp === 'yellow' || lamp === 'red'
   })
+  const overdueCount = countOverdue(subscriptions, today)
+
+  // Число просроченных платежей на иконке приложения (iOS 16.4+, установленное приложение).
+  useEffect(() => {
+    const badge = navigator as Navigator & {
+      setAppBadge?: (count?: number) => Promise<void>
+      clearAppBadge?: () => Promise<void>
+    }
+    const request = overdueCount > 0 ? badge.setAppBadge?.(overdueCount) : badge.clearAppBadge?.()
+    request?.catch(() => undefined)
+  }, [overdueCount])
 
   const refreshPushState = useCallback(() => {
     getPushState()
@@ -120,6 +134,7 @@ export default function App() {
   const resetFilters = () => {
     setStatusFilter('all')
     setCategoryFilter(null)
+    setSearchQuery('')
   }
 
   const shareFile = (file: ShareFile, downloadedMessage: string) => {
@@ -334,6 +349,7 @@ export default function App() {
               hidden={hideAmounts}
               onOpen={(subscription) => setEditor({ mode: 'edit', id: subscription.id })}
             />
+            {subscriptions.length >= 6 && <SearchField value={searchQuery} onChange={setSearchQuery} />}
             <Filters
               categories={categories}
               category={activeCategory}

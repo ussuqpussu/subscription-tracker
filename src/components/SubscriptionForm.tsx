@@ -5,6 +5,7 @@ import {
   CURRENCIES,
   CURRENCY_SYMBOLS,
   MAX_CUSTOM_DAYS,
+  SERVICE_PRESETS,
   STATUS_LABELS,
   STATUSES,
 } from '../constants'
@@ -223,8 +224,39 @@ function FormContent({
           {logoError && <p className={styles.error}>{logoError}</p>}
         </Group>
         <p className={styles.hint}>
-          Логотип подставится с сайта (значок берётся через сервис Google). Можно загрузить свою картинку.
+          Логотип подставится с сайта автоматически. Можно загрузить свою картинку.
         </p>
+
+        {!isEdit && (
+          <section className={styles.section} aria-labelledby={id('presets')}>
+            <h3 id={id('presets')} className={styles.groupTitle}>
+              Популярные сервисы
+            </h3>
+            <div className={styles.presets}>
+              {SERVICE_PRESETS.map((preset) => (
+                <button
+                  key={preset.name}
+                  type="button"
+                  className={styles.preset}
+                  onClick={() => {
+                    setDraft((current) => ({
+                      ...current,
+                      name: preset.name,
+                      url: preset.url,
+                      category: preset.category,
+                      logo: null,
+                    }))
+                    setPreviewUrl(preset.url)
+                    setErrors({})
+                  }}
+                >
+                  <Logo subscription={{ name: preset.name, url: preset.url }} className={styles.presetLogo} />
+                  <span className={styles.presetName}>{preset.name}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
 
         <Group title="Оплата">
           <Row label="Сумма" htmlFor={id('price')}>

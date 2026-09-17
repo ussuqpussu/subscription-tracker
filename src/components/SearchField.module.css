@@ -1,0 +1,63 @@
+.field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 8px 0 12px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-small);
+  background: var(--surface);
+  color: var(--label-secondary);
+}
+
+.field:has(.input:focus-visible) {
+  border-color: var(--focus);
+}
+
+.icon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  min-height: 38px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--label);
+  font-size: 17px;
+}
+
+.input::placeholder {
+  color: var(--label-tertiary);
+}
+
+.input:focus-visible {
+  outline: none;
+}
+
+/* Системный крестик Safari прячем: у поля своя кнопка. */
+.input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.clear {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--fill);
+  color: var(--label-secondary);
+}
+
+.clear svg {
+  width: 14px;
+  height: 14px;
+}

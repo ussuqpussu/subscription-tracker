@@ -20,8 +20,12 @@
   transition: transform 0.32s var(--ease-out);
 }
 
-.content[data-revealed='true'] {
+.content[data-revealed='delete'] {
   transform: translateX(-80px);
+}
+
+.content[data-revealed='paid'] {
+  transform: translateX(80px);
 }
 
 .content[data-dragging='true'] {
@@ -43,11 +47,28 @@
   opacity: 0;
 }
 
-.row:has(> .content[data-dragging='true'], > .content[data-revealed='true']) .deleteAction {
+.row:has(> .content[data-direction='delete'], > .content[data-revealed='delete']) .deleteAction,
+.row:has(> .content[data-direction='paid'], > .content[data-revealed='paid']) .payAction {
   opacity: 1;
 }
 
-.deleteAction svg {
+.payAction {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  /* Иконка по центру открытой полосы шириной 80px. */
+  padding: 0 0 0 28px;
+  border: 0;
+  background: var(--green);
+  color: #06240f;
+  opacity: 0;
+}
+
+.deleteAction svg,
+.payAction svg {
   width: 24px;
   height: 24px;
 }
