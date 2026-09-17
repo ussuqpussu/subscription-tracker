@@ -31,14 +31,6 @@
   height: 20px;
 }
 
-.totals {
-  display: grid;
-  gap: 4px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
 /* Крупная сумма — единственное место с засечками (New York). */
 .total {
   font-family: var(--font-serif);
@@ -49,9 +41,11 @@
   overflow-wrap: anywhere;
 }
 
-.total + .total {
-  font-size: 24px;
-  color: var(--label-secondary);
+/* Годовая сумма — полупрозрачной строкой под месячной. */
+.yearly {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 15px;
+  font-weight: 500;
 }
 
 .empty {
@@ -65,6 +59,12 @@
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 8px;
+}
+
+.note {
+  color: var(--label-secondary);
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 .overdue {

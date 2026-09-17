@@ -15,17 +15,6 @@
   border-bottom: 1px solid var(--separator);
 }
 
-.grabber {
-  position: absolute;
-  top: 6px;
-  left: 50%;
-  width: 38px;
-  height: 5px;
-  border-radius: 999px;
-  background: var(--fill-strong);
-  transform: translateX(-50%);
-}
-
 .title {
   font-size: 17px;
   font-weight: 600;
@@ -116,13 +105,20 @@
 
 .field {
   display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 12px;
+}
+
+.fieldLogo {
+  --logo-size: 40px;
 }
 
 .nameInput {
   flex: 1;
   min-width: 0;
-  min-height: 52px;
-  padding: 0 16px;
+  min-height: 60px;
+  padding: 0 16px 0 0;
   border: 0;
   background: transparent;
   font-size: 19px;
@@ -267,6 +263,27 @@
   font-size: 13px;
 }
 
+.logoActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 16px 12px;
+}
+
+.logoActions :global(.chip) {
+  min-height: 34px;
+  font-size: 14px;
+}
+
+.logoButton {
+  cursor: pointer;
+}
+
+.logoButton:has(:focus-visible) {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
 .action {
   display: flex;
   align-items: center;
@@ -279,6 +296,7 @@
   color: var(--label);
   font-size: 17px;
   text-align: left;
+  text-decoration: none;
   transition: background-color 0.15s ease;
 }
 

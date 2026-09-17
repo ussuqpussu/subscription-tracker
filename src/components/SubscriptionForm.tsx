@@ -1,4 +1,4 @@
-import { useId, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
 import {
   BILLING_PERIOD_LABELS,
   BILLING_PERIODS,
@@ -11,6 +11,8 @@ import {
 import type { BillingPeriod, Currency, Status, Subscription } from '../types'
 import { getDaysUntil, getDueDate, toISODate } from '../utils/dateUtils'
 import { formatDate, formatDueText } from '../utils/format'
+import { getDisplayHost, MAX_URL_LENGTH, normalizeUrl } from '../utils/logo'
+import { LogoError, readLogoFile } from '../utils/logoImage'
 import {
   createEmptyDraft,
   DRAFT_FIELD_ORDER,
@@ -23,7 +25,8 @@ import {
   type DraftField,
   type SubscriptionDraft,
 } from '../utils/validation'
-import { CalendarPlusIcon, CheckIcon, ChevronDownIcon, TrashIcon } from './icons'
+import { ArrowUpRightIcon, CalendarPlusIcon, CheckIcon, ChevronDownIcon, TrashIcon } from './icons'
+import { Logo } from './Logo'
 import { ReminderPicker } from './ReminderPicker'
 import { SegmentedControl, type SegmentOption } from './SegmentedControl'
 import { Sheet } from './Sheet'
@@ -79,6 +82,9 @@ function FormContent({
     subscription ? draftFromSubscription(subscription) : createEmptyDraft(toISODate(today)),
   )
   const [errors, setErrors] = useState<DraftErrors>({})
+  const [logoError, setLogoError] = useState<string | null>(null)
+  // Значок сайта грузится не на каждую букву, а когда ввод ссылки затих.
+  const [previewUrl, setPreviewUrl] = useState(() => normalizeUrl(draft.url))
   const fieldRefs = useRef<Partial<Record<DraftField, HTMLInputElement | null>>>({})
   const uid = useId()
   const id = (field: string) => `${uid}-${field}`
@@ -92,6 +98,24 @@ function FormContent({
         return next
       })
     }
+  }
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setPreviewUrl(normalizeUrl(draft.url)), 600)
+    return () => window.clearTimeout(timer)
+  }, [draft.url])
+
+  const handleLogoFile = (event: ChangeEvent<HTMLInputElement>) => {
+    const input = event.currentTarget
+    const file = input.files?.[0]
+    input.value = ''
+    if (!file) return
+    setLogoError(null)
+    readLogoFile(file)
+      .then((logo) => update('logo', logo))
+      .catch((error: unknown) =>
+        setLogoError(error instanceof LogoError ? error.message : 'Не получилось загрузить картинку.'),
+      )
   }
 
   const handleSave = () => {
@@ -123,8 +147,7 @@ function FormContent({
 
   return (
     <div className={styles.form}>
-      <header className={styles.header}>
-        <span className={styles.grabber} aria-hidden="true" />
+      <header className={styles.header} data-sheet-drag>
         <button type="button" className={styles.headerButton} onClick={onCancel}>
           Отмена
         </button>
@@ -139,6 +162,10 @@ function FormContent({
       <div className={styles.body}>
         <Group>
           <div className={styles.field}>
+            <Logo
+              subscription={{ name: draft.name, url: previewUrl ?? undefined, logo: draft.logo ?? undefined }}
+              className={styles.fieldLogo}
+            />
             <label htmlFor={id('name')} className="visually-hidden">
               Название
             </label>
@@ -158,7 +185,46 @@ function FormContent({
             />
           </div>
           {renderError('name')}
+
+          <Row label="Сайт" htmlFor={id('url')}>
+            <input
+              id={id('url')}
+              ref={(element) => {
+                fieldRefs.current.url = element
+              }}
+              type="url"
+              inputMode="url"
+              className={styles.inlineInput}
+              placeholder="kinopoisk.ru"
+              autoComplete="off"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+              enterKeyHint="next"
+              maxLength={MAX_URL_LENGTH}
+              value={draft.url}
+              onChange={(event) => update('url', event.target.value)}
+              {...errorProps('url')}
+            />
+          </Row>
+          {renderError('url')}
+
+          <div className={styles.logoActions}>
+            <label className={`chip ${styles.logoButton}`}>
+              <input type="file" accept="image/*" className="visually-hidden" onChange={handleLogoFile} />
+              {draft.logo ? 'Заменить логотип' : 'Свой логотип'}
+            </label>
+            {draft.logo && (
+              <button type="button" className="chip" onClick={() => update('logo', null)}>
+                Убрать
+              </button>
+            )}
+          </div>
+          {logoError && <p className={styles.error}>{logoError}</p>}
         </Group>
+        <p className={styles.hint}>
+          Логотип подставится с сайта (значок берётся через сервис Google). Можно загрузить свою картинку.
+        </p>
 
         <Group title="Оплата">
           <Row label="Сумма" htmlFor={id('price')}>
@@ -324,6 +390,15 @@ function FormContent({
                 </span>
                 <CheckIcon />
               </button>
+            )}
+            {subscription.url && (
+              <a className={styles.action} href={subscription.url} target="_blank" rel="noopener noreferrer">
+                <span className={styles.actionText}>
+                  Открыть сайт
+                  <span className={styles.actionHint}>{getDisplayHost(subscription.url)}</span>
+                </span>
+                <ArrowUpRightIcon />
+              </a>
             )}
             <button type="button" className={styles.action} onClick={() => onExport(subscription)}>
               <span className={styles.actionText}>Добавить в календарь</span>

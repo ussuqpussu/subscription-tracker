@@ -30,6 +30,40 @@
   max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 10px);
   border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
   overflow: hidden;
+  transition: transform 0.32s var(--ease-out);
+}
+
+/* Во время свайпа окно идёт за пальцем без задержки. */
+.surface[data-dragging='true'] {
+  transition: none;
+}
+
+/* Полоска сверху: видимая часть маленькая, область касания — шире и выше. */
+.grabber {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 1;
+  width: 96px;
+  height: 22px;
+  transform: translateX(-50%);
+  cursor: grab;
+  touch-action: none;
+}
+
+.grabber::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 29px;
+  width: 38px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--fill-strong);
+}
+
+.surface :global([data-sheet-drag]) {
+  touch-action: none;
 }
 
 /* Окно подтверждения: компактная стеклянная карточка по центру. */

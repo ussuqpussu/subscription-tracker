@@ -54,22 +54,13 @@
   border-radius: var(--radius-card);
 }
 
-/* Плитка-логотип: первая буква на скруглённом квадрате. */
 .tile {
-  display: grid;
-  place-items: center;
-  width: var(--tile-size);
-  height: var(--tile-size);
-  border: 1px solid var(--hairline);
-  border-radius: var(--radius-tile);
-  background: var(--surface-2);
-  color: var(--label);
-  font-size: 18px;
-  font-weight: 600;
+  --logo-size: var(--tile-size);
 }
 
 .row[data-lamp='off'] .tile {
   color: var(--label-secondary);
+  opacity: 0.6;
 }
 
 .text {

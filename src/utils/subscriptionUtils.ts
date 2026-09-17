@@ -1,13 +1,9 @@
-import { CURRENCIES, SOON_THRESHOLD_DAYS } from '../constants'
-import type { Currency, Lamp, Status, Subscription } from '../types'
+import { SOON_THRESHOLD_DAYS } from '../constants'
+import type { Lamp, Status, Subscription } from '../types'
 import {
-  compareDates,
   getDaysUntil,
   getDueDate,
   getLastPaymentBefore,
-  getPaymentDate,
-  getPaymentIndexOnOrAfter,
-  makeDate,
   normalizeCustomDays,
   toISODate,
 } from './dateUtils'
@@ -127,56 +123,6 @@ export function getMonthlyEquivalent(subscription: Subscription): number {
   }
 }
 
-export interface CurrencyTotal {
-  currency: Currency
-  amount: number
-}
-
-/** Траты в месяц по активным подпискам, отдельно по каждой валюте. */
-export function getMonthlyTotals(subscriptions: readonly Subscription[]): CurrencyTotal[] {
-  const totals = new Map<Currency, number>()
-  for (const item of subscriptions) {
-    if (!isActive(item)) continue
-    totals.set(item.currency, (totals.get(item.currency) ?? 0) + getMonthlyEquivalent(item))
-  }
-  return CURRENCIES.filter((currency) => totals.has(currency)).map((currency) => ({
-    currency,
-    amount: totals.get(currency) ?? 0,
-  }))
-}
-
 export function countOverdue(subscriptions: readonly Subscription[], today: Date): number {
   return subscriptions.filter((item) => getLamp(item, today) === 'red').length
-}
-
-export interface MonthForecast {
-  /** Первое число месяца. */
-  month: Date
-  amount: number
-}
-
-/**
- * Сумма платежей по расписанию в каждом месяце, начиная с текущего.
- * Учитываются активные подписки в одной валюте; оплаченные платежи текущего месяца тоже входят в сумму.
- */
-export function getPaymentForecast(
-  subscriptions: readonly Subscription[],
-  currency: Currency,
-  today: Date,
-  months = 6,
-): MonthForecast[] {
-  const items = subscriptions.filter((item) => isActive(item) && item.currency === currency)
-  return Array.from({ length: months }, (_, offset) => {
-    const month = makeDate(today.getFullYear(), today.getMonth() + offset, 1)
-    const nextMonth = makeDate(today.getFullYear(), today.getMonth() + offset + 1, 1)
-    let amount = 0
-    for (const item of items) {
-      let index = getPaymentIndexOnOrAfter(item, month)
-      while (compareDates(getPaymentDate(item, index), nextMonth) < 0) {
-        amount += item.price
-        index += 1
-      }
-    }
-    return { month, amount }
-  })
 }

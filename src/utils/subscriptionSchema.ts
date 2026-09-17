@@ -7,6 +7,7 @@ import {
 } from '../constants'
 import type { BillingPeriod, Currency, Status, Subscription } from '../types'
 import { isValidISODate } from './dateUtils'
+import { isValidLogo, normalizeUrl } from './logo'
 
 type UnknownRecord = Record<string, unknown>
 
@@ -38,8 +39,22 @@ export function normalizeReminders(values: readonly number[]): number[] {
 export function normalizeSubscription(value: unknown): Subscription | null {
   if (!isRecord(value)) return null
 
-  const { id, name, price, currency, startDate, billingPeriod, customDays, category, status, notes, reminders, paidThrough } =
-    value
+  const {
+    id,
+    name,
+    price,
+    currency,
+    startDate,
+    billingPeriod,
+    customDays,
+    category,
+    status,
+    notes,
+    url,
+    logo,
+    reminders,
+    paidThrough,
+  } = value
 
   if (typeof id !== 'string' || id.trim() === '') return null
   if (typeof name !== 'string' || name.trim() === '') return null
@@ -63,6 +78,9 @@ export function normalizeSubscription(value: unknown): Subscription | null {
   }
   if (billingPeriod === 'custom') subscription.customDays = customDays as number
   if (typeof notes === 'string' && notes.trim() !== '') subscription.notes = notes
+  const normalizedUrl = typeof url === 'string' ? normalizeUrl(url) : null
+  if (normalizedUrl) subscription.url = normalizedUrl
+  if (isValidLogo(logo)) subscription.logo = logo
   if (isValidISODate(paidThrough)) subscription.paidThrough = paidThrough
   return subscription
 }

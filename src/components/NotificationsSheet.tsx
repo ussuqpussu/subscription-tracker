@@ -50,8 +50,7 @@ export function NotificationsSheet({
   return (
     <Sheet open={open} onClose={onClose} labelledBy={TITLE_ID}>
       <div className={styles.sheet}>
-        <header className={styles.header}>
-          <span className={styles.grabber} aria-hidden="true" />
+        <header className={styles.header} data-sheet-drag>
           <h2 id={TITLE_ID} className={styles.title}>
             Уведомления
           </h2>

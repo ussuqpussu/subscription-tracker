@@ -193,3 +193,11 @@ export function XCircleIcon(props: IconProps) {
     </Icon>
   )
 }
+
+export function ArrowUpRightIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M8 16 16.5 7.5M9.5 7.5h7v7" />
+    </Icon>
+  )
+}

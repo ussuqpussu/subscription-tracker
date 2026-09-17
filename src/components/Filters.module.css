@@ -15,8 +15,9 @@
 .row {
   display: flex;
   gap: 16px;
-  margin: 0 calc(var(--screen-margin) * -1);
-  padding: 2px var(--screen-margin) 4px;
+  /* Поле под кольцо выбранной категории: иначе overflow обрезает его сверху и снизу. */
+  margin: -6px calc(var(--screen-margin) * -1);
+  padding: 6px var(--screen-margin);
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scrollbar-width: none;

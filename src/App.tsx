@@ -7,9 +7,8 @@ import { Filters } from './components/Filters'
 import { ArrowDownDocIcon, ArrowUpDocIcon, CalendarPlusIcon, TrashIcon } from './components/icons'
 import type { MenuItem } from './components/MoreMenu'
 import { NavBar } from './components/NavBar'
+import { NextPayment } from './components/NextPayment'
 import { NotificationsSheet, type PushMessage } from './components/NotificationsSheet'
-import { SpendingChart } from './components/SpendingChart'
-import { StatTiles } from './components/StatTiles'
 import { SubscriptionForm, type SubscriptionValue } from './components/SubscriptionForm'
 import { SubscriptionList } from './components/SubscriptionList'
 import { SummaryBar } from './components/SummaryBar'
@@ -17,9 +16,10 @@ import { Toast, type ToastMessage } from './components/Toast'
 import { HIDE_AMOUNTS_KEY, STORAGE_KEY } from './constants'
 import { useLocalStorage } from './hooks/useLocalStorage'
 import { usePushSync } from './hooks/usePushSync'
+import { useRates } from './hooks/useRates'
 import { useToday } from './hooks/useToday'
 import { subscriptionsReducer, type SubscriptionsAction } from './state/subscriptionsReducer'
-import type { Currency, Subscription } from './types'
+import type { Subscription } from './types'
 import { backupFileName, createBackup, parseBackup } from './utils/backup'
 import { getDueDate } from './utils/dateUtils'
 import { shareOrDownload, type ShareFile } from './utils/fileShare'
@@ -40,7 +40,6 @@ import {
   collectCategories,
   filterSubscriptions,
   getLamp,
-  getMonthlyTotals,
   isActive,
   markPaid,
   sortSubscriptions,
@@ -70,7 +69,6 @@ export default function App() {
   const [hideAmounts, setHideAmounts] = useLocalStorage(HIDE_AMOUNTS_KEY, false, parseStoredFlag)
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
-  const [preferredCurrency, setPreferredCurrency] = useState<Currency | null>(null)
   const [editor, setEditor] = useState<EditorState>(null)
   const [confirm, setConfirm] = useState<ConfirmRequest | null>(null)
   const [toast, setToast] = useState<ToastMessage | null>(null)
@@ -92,10 +90,11 @@ export default function App() {
     [subscriptions, statusFilter, activeCategory, today],
   )
 
-  // Валюты активных подписок; график и годовая сумма показывают одну из них.
-  const currencies = useMemo(() => getMonthlyTotals(subscriptions).map((total) => total.currency), [subscriptions])
-  const chartCurrency =
-    preferredCurrency !== null && currencies.includes(preferredCurrency) ? preferredCurrency : (currencies[0] ?? null)
+  // Курс нужен, только если есть активные подписки не в рублях.
+  const rates = useRates(
+    subscriptions.some((item) => isActive(item) && item.currency !== 'RUB'),
+    today,
+  )
 
   const attention = subscriptions.some((item) => {
     const lamp = getLamp(item, today)
@@ -325,22 +324,16 @@ export default function App() {
             <SummaryBar
               subscriptions={subscriptions}
               today={today}
+              rates={rates}
               hidden={hideAmounts}
               onToggleHidden={() => setHideAmounts((value) => !value)}
             />
-            {chartCurrency !== null && (
-              <>
-                <StatTiles subscriptions={subscriptions} today={today} currency={chartCurrency} hidden={hideAmounts} />
-                <SpendingChart
-                  subscriptions={subscriptions}
-                  today={today}
-                  currency={chartCurrency}
-                  currencies={currencies}
-                  onCurrencyChange={setPreferredCurrency}
-                  hidden={hideAmounts}
-                />
-              </>
-            )}
+            <NextPayment
+              subscriptions={subscriptions}
+              today={today}
+              hidden={hideAmounts}
+              onOpen={(subscription) => setEditor({ mode: 'edit', id: subscription.id })}
+            />
             <Filters
               categories={categories}
               category={activeCategory}

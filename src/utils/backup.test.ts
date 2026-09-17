@@ -121,6 +121,20 @@ describe('валидация формы', () => {
     })
   })
 
+  it('ссылка на сайт и свой логотип', () => {
+    const base = { ...createEmptyDraft('2026-09-17'), name: 'Кинопоиск', price: '299' }
+    const bad = validateDraft({ ...base, url: 'кинопоиск' })
+    expect(bad.ok).toBe(false)
+    if (!bad.ok) expect(Object.keys(bad.errors)).toEqual(['url'])
+
+    const logo = 'data:image/png;base64,iVBORw0KGgo='
+    const good = validateDraft({ ...base, url: 'www.kinopoisk.ru', logo })
+    expect(good).toMatchObject({ ok: true, value: { url: 'https://www.kinopoisk.ru/', logo } })
+
+    const stored = { ...subscriptions[0], url: 'kinopoisk.ru', logo: 'data:image/svg+xml;base64,PHN2Zz4=' }
+    expect(normalizeSubscriptions([stored]).items[0]).toEqual({ ...subscriptions[0], url: 'https://kinopoisk.ru/' })
+  })
+
   it('разбирает суммы с пробелами и запятой', () => {
     expect(parseAmount('1 299,90')).toBe(1299.9)
     expect(parseAmount('0')).toBe(0)

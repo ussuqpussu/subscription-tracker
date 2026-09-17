@@ -1,8 +1,9 @@
 import type { Subscription } from '../types'
 import { getDaysUntil, getDueDate } from '../utils/dateUtils'
-import { formatDate, formatDueText, formatMoney, formatPeriod, formatStatus, getInitial } from '../utils/format'
+import { formatDate, formatDueText, formatMoney, formatPeriod, formatStatus } from '../utils/format'
 import { getLamp } from '../utils/subscriptionUtils'
 import { CalendarPlusIcon, CheckIcon } from './icons'
+import { Logo } from './Logo'
 import { StatusLamp } from './StatusLamp'
 import styles from './SubscriptionRow.module.css'
 
@@ -37,9 +38,7 @@ export function SubscriptionRow({ subscription, today, onEdit, onExport, onMarkP
   return (
     <li className={styles.row} data-lamp={lamp}>
       <button type="button" className={styles.main} aria-label={label} onClick={() => onEdit(subscription)}>
-        <span className={styles.tile} aria-hidden="true">
-          {getInitial(subscription.name)}
-        </span>
+        <Logo subscription={subscription} className={styles.tile} />
         <span className={styles.text}>
           <span className={styles.name}>{subscription.name}</span>
           <span className={styles.due}>
