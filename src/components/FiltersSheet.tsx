@@ -1,14 +1,18 @@
 import type { Subscription } from '../types'
-import { formatMoney, getInitial } from '../utils/format'
+import { formatMoney } from '../utils/format'
 import type { Rates } from '../utils/rates'
 import { getCategoryShares, NO_CATEGORY } from '../utils/stats'
 import { filterSubscriptions, type StatusFilter } from '../utils/subscriptionUtils'
 import styles from './FiltersSheet.module.css'
-import { CheckIcon } from './icons'
+import { CheckIcon, ListIcon } from './icons'
+import { Logo } from './Logo'
 import { SegmentedControl, type SegmentOption } from './SegmentedControl'
 import { Sheet } from './Sheet'
 
 const TITLE_ID = 'filters-title'
+
+/** Столько логотипов помещается в строке категории. */
+const MAX_LOGOS = 3
 
 const STATUS_OPTIONS: readonly SegmentOption<StatusFilter>[] = [
   { value: 'all', label: 'Все' },
@@ -44,8 +48,9 @@ export function FiltersSheet({
   onReset,
 }: FiltersSheetProps) {
   const amounts = new Map(getCategoryShares(subscriptions, rates).map((share) => [share.category, share.amount]))
-  const countFor = (value: string | null) =>
-    filterSubscriptions(subscriptions, { status, category: value }).length
+  const matching = (value: string | null) => filterSubscriptions(subscriptions, { status, category: value })
+  // В строке категории показываем логотипы первых подписок из неё.
+  const logosFor = (value: string | null) => matching(value).slice(0, MAX_LOGOS)
   const active = status !== 'all' || category !== null
 
   return (
@@ -88,12 +93,20 @@ export function FiltersSheet({
                 aria-pressed={category === null}
                 onClick={() => onCategoryChange(null)}
               >
-                <span className={styles.avatar} data-kind="all" aria-hidden="true">
-                  ∗
+                <span className={styles.logos} aria-hidden="true">
+                  {logosFor(null).length > 0 ? (
+                    logosFor(null).map((item) => (
+                      <Logo key={item.id} subscription={item} className={styles.logo} />
+                    ))
+                  ) : (
+                    <span className={styles.emptyLogo}>
+                      <ListIcon />
+                    </span>
+                  )}
                 </span>
                 <span className={styles.rowText}>
                   <span className={styles.rowLabel}>Все категории</span>
-                  <span className={styles.rowMeta}>{countFor(null)} в списке</span>
+                  <span className={styles.rowMeta}>{matching(null).length} в списке</span>
                 </span>
                 {category === null && <CheckIcon className={styles.check} />}
               </button>
@@ -108,13 +121,15 @@ export function FiltersSheet({
                     aria-pressed={category === item}
                     onClick={() => onCategoryChange(category === item ? null : item)}
                   >
-                    <span className={styles.avatar} aria-hidden="true">
-                      {getInitial(item)}
+                    <span className={styles.logos} aria-hidden="true">
+                      {logosFor(item).map((subscription) => (
+                        <Logo key={subscription.id} subscription={subscription} className={styles.logo} />
+                      ))}
                     </span>
                     <span className={styles.rowText}>
                       <span className={styles.rowLabel}>{item}</span>
                       <span className={`tabular ${styles.rowMeta}`}>
-                        {countFor(item)} · {formatMoney(amount, 'RUB')} в месяц
+                        {matching(item).length} · {formatMoney(amount, 'RUB')} в месяц
                       </span>
                     </span>
                     {category === item && <CheckIcon className={styles.check} />}

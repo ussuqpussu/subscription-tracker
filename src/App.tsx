@@ -47,7 +47,6 @@ import {
   collectCategories,
   filterSubscriptions,
   countOverdue,
-  getLamp,
   isActive,
   markPaid,
   sortSubscriptions,
@@ -156,10 +155,6 @@ export default function App() {
     if (current) void deleteVault(current.vaultId)
   }
 
-  const attention = subscriptions.some((item) => {
-    const lamp = getLamp(item, today)
-    return lamp === 'yellow' || lamp === 'red'
-  })
   const overdueCount = countOverdue(subscriptions, today)
 
   // Число просроченных платежей на иконке приложения (iOS 16.4+, установленное приложение).
@@ -397,7 +392,7 @@ export default function App() {
 
   return (
     <>
-      <NavBar title="Подписки" menuItems={menuItems} attention={attention} onBellClick={openNotifications} />
+      <NavBar title="Подписки" menuItems={menuItems} onBellClick={openNotifications} />
 
       <main className={styles.main}>
         {subscriptions.length === 0 ? (

@@ -77,7 +77,7 @@
 
 .row {
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) auto;
+  grid-template-columns: 66px minmax(0, 1fr) auto;
   align-items: center;
   column-gap: 12px;
   min-height: 56px;
@@ -97,22 +97,41 @@
   background: var(--fill);
 }
 
-.avatar {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--hairline);
-  border-radius: 50%;
-  background: var(--surface);
-  font-size: 15px;
-  font-weight: 600;
+/* Логотипы подписок стопкой, как обложки альбомов. */
+.logos {
+  display: flex;
+  align-items: center;
+  width: 66px;
 }
 
-.row[aria-pressed='true'] .avatar {
-  border-color: transparent;
-  background: var(--accent-tint);
-  color: var(--accent-text);
+.logo {
+  --logo-size: 30px;
+  box-shadow: 0 0 0 2px var(--surface-2);
+}
+
+.logo + .logo {
+  margin-left: -12px;
+}
+
+.logo:first-child:last-child {
+  --logo-size: 34px;
+}
+
+.emptyLogo {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--label-secondary);
+}
+
+.emptyLogo svg {
+  width: 18px;
+  height: 18px;
 }
 
 .rowText {

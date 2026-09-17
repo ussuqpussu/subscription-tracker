@@ -6,8 +6,6 @@ import styles from './NavBar.module.css'
 interface NavBarProps {
   title: string
   menuItems: readonly MenuItem[]
-  /** Есть платежи с жёлтой или красной лампочкой: на колокольчике горит точка. */
-  attention: boolean
   onBellClick: () => void
 }
 
@@ -15,7 +13,7 @@ interface NavBarProps {
  * Верхняя панель: аватар-меню слева, заголовок, колокольчик справа.
  * При прокрутке под панелью проявляется стеклянная подложка.
  */
-export function NavBar({ title, menuItems, attention, onBellClick }: NavBarProps) {
+export function NavBar({ title, menuItems, onBellClick }: NavBarProps) {
   const [scrolled, setScrolled] = useState(false)
   const barRef = useRef<HTMLElement>(null)
   const sentinelRef = useRef<HTMLDivElement>(null)
@@ -42,11 +40,10 @@ export function NavBar({ title, menuItems, attention, onBellClick }: NavBarProps
           <button
             type="button"
             className={`glass ${styles.bell}`}
-            aria-label={attention ? 'Уведомления. Есть платежи, которые пора оплатить' : 'Уведомления'}
+            aria-label="Уведомления"
             onClick={onBellClick}
           >
             <BellIcon />
-            {attention && <span className={styles.dot} aria-hidden="true" />}
           </button>
         </div>
       </header>
