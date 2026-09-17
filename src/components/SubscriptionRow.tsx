@@ -1,6 +1,6 @@
 import type { Subscription } from '../types'
 import { getDaysUntil, getDueDate } from '../utils/dateUtils'
-import { formatDate, formatDueText, formatMoney, formatPeriod, formatStatus } from '../utils/format'
+import { formatDate, formatDueText, formatMoney, formatPeriod, formatStatus, getInitial } from '../utils/format'
 import { getLamp } from '../utils/subscriptionUtils'
 import { CalendarPlusIcon, CheckIcon } from './icons'
 import { StatusLamp } from './StatusLamp'
@@ -37,16 +37,20 @@ export function SubscriptionRow({ subscription, today, onEdit, onExport, onMarkP
   return (
     <li className={styles.row} data-lamp={lamp}>
       <button type="button" className={styles.main} aria-label={label} onClick={() => onEdit(subscription)}>
-        <span className={styles.lamp}>
-          <StatusLamp lamp={lamp} />
+        <span className={styles.tile} aria-hidden="true">
+          {getInitial(subscription.name)}
         </span>
         <span className={styles.text}>
           <span className={styles.name}>{subscription.name}</span>
-          {subscription.category && <span className={styles.category}>{subscription.category}</span>}
           <span className={styles.due}>
+            <StatusLamp lamp={lamp} />
             <span className={styles.dueText}>{dueText}</span>
-            {active && <span className={styles.date}>{dateText}</span>}
           </span>
+          {(active || subscription.category) && (
+            <span className={styles.meta}>
+              {[active ? dateText : '', subscription.category].filter(Boolean).join(' · ')}
+            </span>
+          )}
         </span>
         <span className={styles.money}>
           <span className={`tabular ${styles.price}`}>{price}</span>

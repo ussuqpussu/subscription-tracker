@@ -1,0 +1,21 @@
+{
+  "name": "subscription-push",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --test-scheduled",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "wrangler d1 migrations apply subscription-push --remote",
+    "db:migrate:local": "wrangler d1 migrations apply subscription-push --local"
+  },
+  "dependencies": {
+    "@block65/webcrypto-web-push": "^2.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260917.1",
+    "typescript": "~6.0.2",
+    "wrangler": "^4.133.0"
+  }
+}

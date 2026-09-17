@@ -1,10 +1,32 @@
-/* Inset grouped список: один скруглённый блок со строками и тонкими разделителями, без теней у строк. */
+.section {
+  display: grid;
+  gap: 12px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 4px;
+}
+
+.title {
+  font-family: var(--font-text);
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.count {
+  color: var(--label-secondary);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Один блок со строками и тонкими разделителями, как список транзакций. */
 .list {
   margin: 0;
   padding: 0;
   list-style: none;
-  border-radius: var(--radius-group);
-  background: var(--group-fill);
-  box-shadow: inset 0 0 0 0.5px var(--group-stroke);
   overflow: hidden;
 }

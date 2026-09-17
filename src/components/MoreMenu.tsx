@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
-import { EllipsisIcon } from './icons'
+import { PersonIcon } from './icons'
 import styles from './MoreMenu.module.css'
 
 export interface MenuItem {
@@ -14,9 +14,11 @@ export interface MenuItem {
 
 interface MoreMenuProps {
   items: readonly MenuItem[]
+  /** С какого края кнопки раскрывается меню. */
+  align?: 'left' | 'right'
 }
 
-export function MoreMenu({ items }: MoreMenuProps) {
+export function MoreMenu({ items, align = 'right' }: MoreMenuProps) {
   const [open, setOpen] = useState(false)
   const menuId = useId()
   const triggerRef = useRef<HTMLButtonElement>(null)
@@ -70,13 +72,13 @@ export function MoreMenu({ items }: MoreMenuProps) {
         ref={triggerRef}
         type="button"
         className={`glass ${styles.trigger}`}
-        aria-label="Ещё"
+        aria-label="Меню"
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
         onClick={() => setOpen((value) => !value)}
       >
-        <EllipsisIcon />
+        <PersonIcon />
       </button>
 
       {open && (
@@ -86,6 +88,7 @@ export function MoreMenu({ items }: MoreMenuProps) {
           role="menu"
           aria-label="Действия"
           className={`glass-thick ${styles.menu}`}
+          data-align={align}
           onKeyDown={handleMenuKeyDown}
         >
           {items.map((item) => (

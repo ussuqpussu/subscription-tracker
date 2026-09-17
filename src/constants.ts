@@ -2,6 +2,9 @@ import type { BillingPeriod, Currency, Status } from './types'
 
 export const STORAGE_KEY = 'subscription-tracker:v1'
 
+/** Режим «глаз закрыт» на главной карточке. */
+export const HIDE_AMOUNTS_KEY = 'subscription-tracker:hide-amounts'
+
 export const CURRENCIES: readonly Currency[] = ['RUB', 'USD', 'EUR', 'KZT']
 
 export const CURRENCY_SYMBOLS: Record<Currency, string> = {

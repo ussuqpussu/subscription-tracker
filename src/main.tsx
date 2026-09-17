@@ -4,6 +4,7 @@ import { registerSW } from 'virtual:pwa-register'
 import './styles/tokens.css'
 import './styles/base.css'
 import './styles/glass.css'
+import './styles/surfaces.css'
 import App from './App'
 
 // Service worker кэширует приложение: после установки на экран «Домой» оно открывается без сети.

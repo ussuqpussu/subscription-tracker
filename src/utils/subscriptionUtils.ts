@@ -1,9 +1,13 @@
 import { CURRENCIES, SOON_THRESHOLD_DAYS } from '../constants'
 import type { Currency, Lamp, Status, Subscription } from '../types'
 import {
+  compareDates,
   getDaysUntil,
   getDueDate,
   getLastPaymentBefore,
+  getPaymentDate,
+  getPaymentIndexOnOrAfter,
+  makeDate,
   normalizeCustomDays,
   toISODate,
 } from './dateUtils'
@@ -143,4 +147,36 @@ export function getMonthlyTotals(subscriptions: readonly Subscription[]): Curren
 
 export function countOverdue(subscriptions: readonly Subscription[], today: Date): number {
   return subscriptions.filter((item) => getLamp(item, today) === 'red').length
+}
+
+export interface MonthForecast {
+  /** Первое число месяца. */
+  month: Date
+  amount: number
+}
+
+/**
+ * Сумма платежей по расписанию в каждом месяце, начиная с текущего.
+ * Учитываются активные подписки в одной валюте; оплаченные платежи текущего месяца тоже входят в сумму.
+ */
+export function getPaymentForecast(
+  subscriptions: readonly Subscription[],
+  currency: Currency,
+  today: Date,
+  months = 6,
+): MonthForecast[] {
+  const items = subscriptions.filter((item) => isActive(item) && item.currency === currency)
+  return Array.from({ length: months }, (_, offset) => {
+    const month = makeDate(today.getFullYear(), today.getMonth() + offset, 1)
+    const nextMonth = makeDate(today.getFullYear(), today.getMonth() + offset + 1, 1)
+    let amount = 0
+    for (const item of items) {
+      let index = getPaymentIndexOnOrAfter(item, month)
+      while (compareDates(getPaymentDate(item, index), nextMonth) < 0) {
+        amount += item.price
+        index += 1
+      }
+    }
+    return { month, amount }
+  })
 }

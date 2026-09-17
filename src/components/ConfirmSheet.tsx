@@ -30,7 +30,7 @@ export function ConfirmSheet({ request, onClose }: ConfirmSheetProps) {
             <button
               type="button"
               className={styles.button}
-              data-tone={request.destructive ? 'destructive' : 'default'}
+              data-tone={request.destructive ? 'destructive' : 'primary'}
               onClick={() => {
                 onClose()
                 request.onConfirm()

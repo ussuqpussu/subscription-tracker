@@ -1,25 +1,99 @@
-.filters {
+.section {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   min-width: 0;
 }
 
-/* Категории прокручиваются вбок и уходят под край экрана, как в iOS. */
-.chips {
+.title {
+  padding: 0 4px;
+  font-family: var(--font-text);
+  font-size: 17px;
+  font-weight: 500;
+}
+
+/* Аватары прокручиваются вбок и уходят под край экрана, как в iOS. */
+.row {
   display: flex;
-  gap: 8px;
-  margin: 0 -16px;
-  padding: 2px 16px 4px;
+  gap: 16px;
+  margin: 0 calc(var(--screen-margin) * -1);
+  padding: 2px var(--screen-margin) 4px;
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
 }
 
-.chips::-webkit-scrollbar {
+.row::-webkit-scrollbar {
   display: none;
 }
 
-.chips :global(.chip) {
+.item {
+  display: grid;
   flex: none;
+  justify-items: center;
+  gap: 8px;
+  width: 64px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--label-secondary);
+  transition: transform 0.18s var(--ease-out);
+}
+
+.item:active {
+  transform: scale(0.94);
+}
+
+.item:focus-visible {
+  outline: none;
+}
+
+.item:focus-visible .avatar {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border: 1px solid var(--hairline);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--label);
+  font-size: 20px;
+  font-weight: 600;
+  transition: box-shadow 0.2s ease;
+}
+
+.avatar svg {
+  width: 22px;
+  height: 22px;
+}
+
+.item[aria-pressed='true'] {
+  color: var(--accent-text);
+}
+
+.item[aria-pressed='true'] .avatar {
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent);
+}
+
+.add {
+  border: 1.5px dashed rgba(255, 255, 255, 0.3);
+  background: transparent;
+  color: var(--label-secondary);
+}
+
+.name {
+  overflow: hidden;
+  max-width: 100%;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

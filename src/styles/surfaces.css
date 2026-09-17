@@ -1,0 +1,127 @@
+/*
+ * Плоские поверхности и общие примитивы управления.
+ * Глубина — ступень яркости и рамка 1px, без теней.
+ */
+
+.card {
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+/* Неинтерактивная метка-капсула. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--label-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Кнопки: рамка 1px; заливка только у главного действия. */
+.button {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--label);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s ease,
+    transform 0.18s var(--ease-out);
+}
+
+.button:active {
+  transform: scale(0.97);
+  background: var(--fill);
+}
+
+.button-primary {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.button-primary:active {
+  background: var(--accent-pressed);
+}
+
+.chip {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--label);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.18s var(--ease-out);
+}
+
+.chip:active {
+  transform: scale(0.95);
+}
+
+.chip[aria-pressed='true'] {
+  border-color: transparent;
+  background: var(--accent-tint);
+  color: var(--accent-text);
+}
+
+.icon-button {
+  appearance: none;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--label-secondary);
+  transition:
+    background-color 0.2s ease,
+    transform 0.18s var(--ease-out);
+}
+
+.icon-button:hover {
+  background: var(--fill);
+}
+
+.icon-button:active {
+  transform: scale(0.92);
+  background: var(--fill-strong);
+}
+
+.icon-button svg {
+  width: 22px;
+  height: 22px;
+}

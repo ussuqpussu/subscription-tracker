@@ -10,7 +10,7 @@ function Icon({ children, ...props }: IconProps) {
       height="24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.9}
+      strokeWidth={1.5}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
@@ -116,6 +116,80 @@ export function SearchOffIcon(props: IconProps) {
     <Icon strokeWidth={1.6} {...props}>
       <circle cx="10.5" cy="10.5" r="6" />
       <path d="m15 15 5 5M8.2 8.2l4.6 4.6M12.8 8.2l-4.6 4.6" />
+    </Icon>
+  )
+}
+
+export function BellIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M6 16.5V11a6 6 0 1 1 12 0v5.5l1.5 2h-15Z" />
+      <path d="M10 20.5a2.2 2.2 0 0 0 4 0" />
+    </Icon>
+  )
+}
+
+export function EyeIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
+      <circle cx="12" cy="12" r="3" />
+    </Icon>
+  )
+}
+
+export function EyeOffIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M9.9 5.8A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-2.6 3.4M6.6 7.4C3.9 9.2 2.5 12 2.5 12S6 18.5 12 18.5c1.9 0 3.5-.6 4.9-1.5" />
+      <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2M3.5 3.5l17 17" />
+    </Icon>
+  )
+}
+
+export function PersonIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="8.5" r="3.5" />
+      <path d="M5 19.5c1.2-3.2 3.8-5 7-5s5.8 1.8 7 5" />
+    </Icon>
+  )
+}
+
+export function ListIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M9 6.5h11M9 12h11M9 17.5h11" />
+      <circle cx="4.8" cy="6.5" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="4.8" cy="12" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="4.8" cy="17.5" r="1.1" fill="currentColor" stroke="none" />
+    </Icon>
+  )
+}
+
+export function PlayCircleIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M10.2 8.8v6.4l5-3.2Z" />
+    </Icon>
+  )
+}
+
+export function PauseCircleIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M10 9v6M14 9v6" />
+    </Icon>
+  )
+}
+
+export function XCircleIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="m9.3 9.3 5.4 5.4M14.7 9.3l-5.4 5.4" />
     </Icon>
   )
 }

@@ -1,55 +1,56 @@
-import type { StatusFilter } from '../utils/subscriptionUtils'
+import { getInitial } from '../utils/format'
 import styles from './Filters.module.css'
-import { SegmentedControl, type SegmentOption } from './SegmentedControl'
-
-const STATUS_OPTIONS: readonly SegmentOption<StatusFilter>[] = [
-  { value: 'all', label: 'Все' },
-  { value: 'active', label: 'Активные' },
-  { value: 'paused', label: 'На паузе' },
-  { value: 'cancelled', label: 'Отменены' },
-]
+import { ListIcon, PlusIcon } from './icons'
 
 interface FiltersProps {
-  status: StatusFilter
-  onStatusChange: (status: StatusFilter) => void
   categories: readonly string[]
   category: string | null
   onCategoryChange: (category: string | null) => void
+  onAdd: () => void
 }
 
-export function Filters({ status, onStatusChange, categories, category, onCategoryChange }: FiltersProps) {
+/** Быстрые действия: круглые аватары категорий-фильтров и пунктирная «+» для новой подписки. */
+export function Filters({ categories, category, onCategoryChange, onAdd }: FiltersProps) {
   return (
-    <div className={styles.filters}>
-      <SegmentedControl
-        className="glass"
-        ariaLabel="Статус подписки"
-        options={STATUS_OPTIONS}
-        value={status}
-        onChange={onStatusChange}
-      />
-      {categories.length > 0 && (
-        <div className={styles.chips} role="group" aria-label="Категория">
+    <section className={styles.section} aria-labelledby="categories-title">
+      <h2 id="categories-title" className={styles.title}>
+        Категории
+      </h2>
+      <div className={styles.row} role="group" aria-labelledby="categories-title">
+        <button
+          type="button"
+          className={styles.item}
+          aria-pressed={category === null}
+          onClick={() => onCategoryChange(null)}
+        >
+          <span className={styles.avatar} aria-hidden="true">
+            <ListIcon />
+          </span>
+          <span className={styles.name}>Все</span>
+        </button>
+
+        {categories.map((item) => (
           <button
+            key={item}
             type="button"
-            className="chip"
-            aria-pressed={category === null}
-            onClick={() => onCategoryChange(null)}
+            className={styles.item}
+            aria-pressed={category === item}
+            onClick={() => onCategoryChange(category === item ? null : item)}
           >
-            Все категории
+            <span className={styles.avatar} aria-hidden="true">
+              {getInitial(item)}
+            </span>
+            <span className={styles.name}>{item}</span>
           </button>
-          {categories.map((item) => (
-            <button
-              key={item}
-              type="button"
-              className="chip"
-              aria-pressed={category === item}
-              onClick={() => onCategoryChange(category === item ? null : item)}
-            >
-              {item}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+        ))}
+
+        <button type="button" className={styles.item} onClick={onAdd}>
+          <span className={`${styles.avatar} ${styles.add}`} aria-hidden="true">
+            <PlusIcon />
+          </span>
+          <span className={styles.name}>Добавить</span>
+        </button>
+      </div>
+    </section>
   )
 }

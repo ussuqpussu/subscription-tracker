@@ -1,14 +1,14 @@
 .body {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 22px 18px 18px;
+  gap: 20px;
+  padding: 24px 16px 16px;
 }
 
 .text {
   display: grid;
-  gap: 6px;
-  padding: 0 6px;
+  gap: 8px;
+  padding: 0 8px;
   text-align: center;
 }
 
@@ -21,7 +21,7 @@
 .message {
   color: var(--label-secondary);
   font-size: 15px;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
 .actions {
@@ -32,9 +32,9 @@
 .button {
   min-height: 48px;
   padding: 0 16px;
-  border: 0;
+  border: 1px solid var(--hairline-strong);
   border-radius: 999px;
-  background: var(--fill);
+  background: transparent;
   color: var(--label);
   font-size: 17px;
   font-weight: 600;
@@ -45,9 +45,19 @@
 
 .button:active {
   transform: scale(0.97);
-  background: var(--fill-strong);
+  background: var(--fill);
 }
 
 .button[data-tone='destructive'] {
   color: var(--text-red);
+}
+
+.button[data-tone='primary'] {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.button[data-tone='primary']:active {
+  background: var(--accent-pressed);
 }

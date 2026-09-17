@@ -14,6 +14,10 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: false,
+      // Свой service worker: кроме кэша он принимает пуш-уведомления.
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
       includeAssets: ['favicon.ico', 'icon.svg', 'apple-touch-icon-180x180.png'],
       manifest: {
         id: base,
@@ -26,8 +30,8 @@ export default defineConfig({
         scope: base,
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#f2f2f7',
-        theme_color: '#f2f2f7',
+        background_color: '#000000',
+        theme_color: '#000000',
         categories: ['finance', 'productivity'],
         icons: [
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
@@ -35,14 +39,13 @@ export default defineConfig({
           { src: 'maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
-      workbox: {
+      injectManifest: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
-        cleanupOutdatedCaches: true,
       },
     }),
   ],
   test: {
     environment: 'node',
-    include: ['src/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'worker/src/**/*.test.ts'],
   },
 })

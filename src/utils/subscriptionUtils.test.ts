@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { subscriptionsReducer } from '../state/subscriptionsReducer'
 import type { Subscription } from '../types'
-import { parseISODate } from './dateUtils'
-import { formatDays, formatDueText, formatMoney, formatReminderList } from './format'
+import { parseISODate, toISODate } from './dateUtils'
+import { formatDays, formatDueText, formatMoney, formatMonthShort, formatReminderList, getInitial } from './format'
 import {
   collectCategories,
   countOverdue,
@@ -11,6 +11,7 @@ import {
   getLamp,
   getMonthlyEquivalent,
   getMonthlyTotals,
+  getPaymentForecast,
   markPaid,
   mergeEdit,
   sortSubscriptions,
@@ -204,6 +205,48 @@ describe('сводка', () => {
   })
 })
 
+describe('прогноз платежей', () => {
+  const amounts = (items: Subscription[], currency: 'RUB' | 'USD' = 'RUB') =>
+    getPaymentForecast(items, currency, today).map((item) => item.amount)
+
+  it('шесть месяцев, начиная с текущего', () => {
+    const forecast = getPaymentForecast([sub({ id: 'a', startDate: '2026-09-05' })], 'RUB', today)
+    expect(forecast.map((item) => toISODate(item.month))).toEqual([
+      '2026-09-01',
+      '2026-10-01',
+      '2026-11-01',
+      '2026-12-01',
+      '2027-01-01',
+      '2027-02-01',
+    ])
+    expect(forecast.map((item) => item.amount)).toEqual([100, 100, 100, 100, 100, 100])
+  })
+
+  it('еженедельная подписка: все платежи месяца', () => {
+    const items = [sub({ id: 'w', price: 10, startDate: '2026-09-03', billingPeriod: 'weekly' })]
+    expect(amounts(items).slice(0, 2)).toEqual([40, 50])
+  })
+
+  it('годовая подписка попадает только в свой месяц', () => {
+    const items = [sub({ id: 'y', price: 1200, startDate: '2026-12-10', billingPeriod: 'yearly' })]
+    expect(amounts(items)).toEqual([0, 0, 0, 1200, 0, 0])
+  })
+
+  it('до первого платежа нули', () => {
+    expect(amounts([sub({ id: 'f', startDate: '2026-11-01' })])).toEqual([0, 0, 100, 100, 100, 100])
+  })
+
+  it('без неактивных и других валют', () => {
+    const items = [
+      sub({ id: 'p', startDate: '2026-09-05', status: 'paused' }),
+      sub({ id: 'c', startDate: '2026-09-05', status: 'cancelled' }),
+      sub({ id: 'u', startDate: '2026-09-05', currency: 'USD', price: 5 }),
+    ]
+    expect(amounts(items)).toEqual([0, 0, 0, 0, 0, 0])
+    expect(amounts(items, 'USD')).toEqual([5, 5, 5, 5, 5, 5])
+  })
+})
+
 describe('форматирование ru-RU', () => {
   it('дни и сроки', () => {
     expect(formatDays(1)).toBe('1 день')
@@ -225,5 +268,13 @@ describe('форматирование ru-RU', () => {
     expect(normalize(formatMoney(9.9, 'USD'))).toBe('9,90 $')
     expect(normalize(formatMoney(249.1666, 'EUR'))).toBe('249,17 €')
     expect(normalize(formatMoney(15000, 'KZT'))).toBe('15 000 ₸')
+  })
+
+  it('месяц графика и буква плитки', () => {
+    expect(formatMonthShort(parseISODate('2026-09-01'))).toBe('сент')
+    expect(formatMonthShort(parseISODate('2026-05-01'))).toBe('май')
+    expect(getInitial('  кинопоиск')).toBe('К')
+    expect(getInitial('🎬 Кино')).toBe('🎬')
+    expect(getInitial('')).toBe('')
   })
 })

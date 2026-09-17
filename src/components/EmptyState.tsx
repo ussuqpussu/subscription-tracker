@@ -23,12 +23,16 @@ export function EmptyState({ variant, onAction }: EmptyStateProps) {
   const content = CONTENT[variant]
   return (
     <section className={styles.empty} aria-labelledby="empty-title">
-      <div className={`glass ${styles.icon}`}>{variant === 'empty' ? <StackIcon /> : <SearchOffIcon />}</div>
+      <div className={`card ${styles.icon}`}>{variant === 'empty' ? <StackIcon /> : <SearchOffIcon />}</div>
       <h2 id="empty-title" className={styles.title}>
         {content.title}
       </h2>
       <p className={styles.text}>{content.text}</p>
-      <button type="button" className={`chip ${styles.action}`} onClick={onAction}>
+      <button
+        type="button"
+        className={`button ${variant === 'empty' ? 'button-primary' : ''} ${styles.action}`}
+        onClick={onAction}
+      >
         {content.action}
       </button>
     </section>

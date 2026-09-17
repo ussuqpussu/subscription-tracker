@@ -1,17 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
+import { BellIcon } from './icons'
 import { MoreMenu, type MenuItem } from './MoreMenu'
 import styles from './NavBar.module.css'
 
 interface NavBarProps {
   title: string
   menuItems: readonly MenuItem[]
+  /** Есть платежи с жёлтой или красной лампочкой: на колокольчике горит точка. */
+  attention: boolean
+  onBellClick: () => void
 }
 
 /**
- * Навбар iOS: большой заголовок в контенте, а при прокрутке — компактная стеклянная полоса
- * с маленьким заголовком по центру.
+ * Верхняя панель: аватар-меню слева, заголовок, колокольчик справа.
+ * При прокрутке под панелью проявляется стеклянная подложка.
  */
-export function NavBar({ title, menuItems }: NavBarProps) {
+export function NavBar({ title, menuItems, attention, onBellClick }: NavBarProps) {
   const [scrolled, setScrolled] = useState(false)
   const barRef = useRef<HTMLElement>(null)
   const sentinelRef = useRef<HTMLDivElement>(null)
@@ -33,17 +37,19 @@ export function NavBar({ title, menuItems }: NavBarProps) {
       <header ref={barRef} className={styles.bar} data-scrolled={scrolled}>
         <div className={`glass-thick ${styles.backdrop}`} aria-hidden="true" />
         <div className={styles.inner}>
-          <span className={styles.compactTitle} aria-hidden="true">
-            {title}
-          </span>
-          <div className={styles.trailing}>
-            <MoreMenu items={menuItems} />
-          </div>
+          <MoreMenu items={menuItems} align="left" />
+          <h1 className={styles.title}>{title}</h1>
+          <button
+            type="button"
+            className={`glass ${styles.bell}`}
+            aria-label={attention ? 'Уведомления. Есть платежи, которые пора оплатить' : 'Уведомления'}
+            onClick={onBellClick}
+          >
+            <BellIcon />
+            {attention && <span className={styles.dot} aria-hidden="true" />}
+          </button>
         </div>
       </header>
-      <div className={styles.largeTitleWrap}>
-        <h1 className={styles.largeTitle}>{title}</h1>
-      </div>
       <div ref={sentinelRef} className={styles.sentinel} aria-hidden="true" />
     </>
   )

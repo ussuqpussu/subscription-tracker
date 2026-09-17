@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "subscription-push",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "observability": { "enabled": true },
+  // Раз в 15 минут отправляются напоминания, чьё время пришло.
+  "triggers": { "crons": ["*/15 * * * *"] },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "subscription-push",
+      // Заменить на id из `npx wrangler d1 create subscription-push`.
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": {
+    "ALLOWED_ORIGINS": "https://ussuqpussu.github.io,http://localhost:5173,http://localhost:4173",
+    "VAPID_SUBJECT": "https://ussuqpussu.github.io/subscription-tracker/"
+  }
+  // Секреты: VAPID_PUBLIC_KEY и VAPID_PRIVATE_KEY (`npx wrangler secret put ...`).
+}

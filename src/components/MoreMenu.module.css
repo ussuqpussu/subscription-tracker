@@ -2,6 +2,7 @@
   position: relative;
 }
 
+/* Круглый аватар: открывает меню с данными и экспортом. */
 .trigger {
   display: grid;
   place-items: center;
@@ -34,9 +35,15 @@
   min-width: 250px;
   max-width: calc(100vw - 32px);
   padding: 8px;
-  border-radius: 26px;
+  border-radius: var(--radius-card);
   transform-origin: top right;
   animation: menu-in 0.34s var(--ease-spring);
+}
+
+.menu[data-align='left'] {
+  right: auto;
+  left: 0;
+  transform-origin: top left;
 }
 
 .item {
@@ -47,7 +54,7 @@
   min-height: 46px;
   padding: 0 14px 0 16px;
   border: 0;
-  border-radius: 16px;
+  border-radius: var(--radius-small);
   background: transparent;
   color: var(--label);
   font-size: 17px;

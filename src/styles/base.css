@@ -20,28 +20,13 @@ body {
   min-height: 100dvh;
   font-family: var(--font-text);
   font-size: 17px;
-  line-height: 1.3;
+  line-height: 1.4;
   letter-spacing: -0.012em;
   color: var(--label);
-  /* Фон задан у html: непрозрачный фон body закрыл бы слой с пятнами. */
-  background: transparent;
+  background: var(--bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;
-}
-
-/* Цветные пятна: через них стекло «преломляет» фон. Слой неподвижен. */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(38rem 30rem at 12% -6%, var(--blob-1), transparent 70%),
-    radial-gradient(34rem 28rem at 100% 12%, var(--blob-2), transparent 70%),
-    radial-gradient(30rem 26rem at 88% 92%, var(--blob-3), transparent 70%),
-    radial-gradient(32rem 24rem at 0% 78%, var(--blob-4), transparent 70%);
 }
 
 h1,
@@ -49,6 +34,14 @@ h2,
 h3,
 p {
   margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  line-height: 1.2;
+  letter-spacing: -0.022em;
 }
 
 button,
@@ -93,7 +86,6 @@ button:disabled {
 }
 
 .tabular {
-  font-family: var(--font-rounded);
   font-variant-numeric: tabular-nums;
 }
 
