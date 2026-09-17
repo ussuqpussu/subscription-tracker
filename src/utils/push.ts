@@ -20,6 +20,16 @@ export type PushState = 'unconfigured' | 'unsupported' | 'needs-install' | 'deni
 
 export class PushError extends Error {}
 
+/** Сервер уведомлений ответил не 2xx. */
+class PushServerError extends PushError {
+  readonly status: number
+
+  constructor(status: number) {
+    super(`Сервер уведомлений ответил ошибкой ${status}.`)
+    this.status = status
+  }
+}
+
 function isPushSupported(): boolean {
   return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window
 }
@@ -70,7 +80,7 @@ async function callServer(method: 'POST' | 'DELETE', path: string, body: unknown
   } catch {
     throw new PushError('Сервер уведомлений недоступен. Проверьте интернет.')
   }
-  if (!response.ok) throw new PushError(`Сервер уведомлений ответил ошибкой ${response.status}.`)
+  if (!response.ok) throw new PushServerError(response.status)
 }
 
 function sendSchedule(subscription: PushSubscription, subscriptions: readonly Subscription[], now: Date) {
@@ -125,5 +135,15 @@ export async function syncPush(subscriptions: readonly Subscription[], now: Date
 export async function sendTestPush(): Promise<void> {
   const subscription = await getPushSubscription()
   if (!subscription) throw new PushError('Уведомления выключены.')
-  await callServer('POST', '/api/test', { endpoint: subscription.endpoint })
+  try {
+    await callServer('POST', '/api/test', { endpoint: subscription.endpoint })
+  } catch (error) {
+    if (error instanceof PushServerError) {
+      if (error.status === 429) throw new PushError('Тестовое уведомление можно отправлять раз в минуту. Подождите немного.')
+      if (error.status === 404 || error.status === 410) {
+        throw new PushError('Сервер не знает это устройство. Выключите и снова включите уведомления.')
+      }
+    }
+    throw error
+  }
 }
