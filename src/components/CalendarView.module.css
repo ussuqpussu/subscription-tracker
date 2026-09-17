@@ -1,0 +1,299 @@
+.calendar {
+  display: grid;
+  gap: 16px;
+}
+
+/* Шапка месяца — стеклянная капсула, липнет под верхней панелью. */
+.header {
+  position: sticky;
+  top: calc(64px + env(safe-area-inset-top, 0px));
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px;
+}
+
+.month {
+  font-family: var(--font-rounded);
+  font-size: 17px;
+  font-weight: 600;
+  text-align: center;
+  /* Сентябрь 2026 → Сентябрь 2026 с заглавной. */
+  text-transform: capitalize;
+}
+
+.arrow {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--accent-text);
+  transition: transform 0.3s var(--ease-spring);
+}
+
+.arrow svg {
+  width: 22px;
+  height: 22px;
+}
+
+.arrow:active {
+  transform: scale(0.9);
+}
+
+.sheet {
+  display: grid;
+  gap: 8px;
+  touch-action: pan-y;
+}
+
+.weekdays,
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.weekdays {
+  color: var(--label-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.grid {
+  gap: 2px;
+}
+
+.day {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 3px;
+  min-height: 52px;
+  padding: 4px 0 6px;
+  border: 0;
+  border-radius: var(--radius-small);
+  background: transparent;
+  color: var(--label);
+  transition:
+    background-color 0.2s ease,
+    transform 0.18s var(--ease-out);
+}
+
+.day:active {
+  transform: scale(0.94);
+}
+
+.day[data-outside='true'] {
+  color: var(--label-tertiary);
+}
+
+.dayNumber {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-family: var(--font-rounded);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Сегодня — тонкая кромка, выбранный день — стеклянный кружок. */
+.day[data-today='true'] .dayNumber {
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+  color: var(--accent-text);
+}
+
+.day[data-selected='true'] .dayNumber {
+  background:
+    radial-gradient(120% 90% at 50% -20%, rgba(255, 255, 255, 0.4), transparent 60%),
+    var(--accent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+.dots {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 8px;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--lamp-green);
+}
+
+.dot[data-lamp='yellow'] {
+  background: var(--lamp-yellow);
+}
+
+.dot[data-lamp='red'] {
+  background: var(--lamp-red);
+}
+
+/* Конец пробного периода — полая точка. */
+.dot[data-type='trial'] {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--accent-text);
+}
+
+.more {
+  color: var(--label-secondary);
+  font-size: 9px;
+  line-height: 1;
+}
+
+.total {
+  padding: 0 4px;
+  color: var(--label-secondary);
+  font-size: 13px;
+}
+
+.dayList {
+  display: grid;
+  gap: 12px;
+}
+
+.dayHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 4px;
+}
+
+.dayTitle {
+  font-family: var(--font-text);
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.todayButton {
+  min-height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--label);
+  font-size: 14px;
+  font-weight: 600;
+  transition: transform 0.3s var(--ease-spring);
+}
+
+.todayButton:active {
+  transform: scale(0.95);
+}
+
+.empty {
+  padding: 0 4px;
+  color: var(--label-secondary);
+  font-size: 15px;
+}
+
+.events {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow: hidden;
+}
+
+.event + .event {
+  border-top: 1px solid var(--separator);
+}
+
+.eventMain {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+
+.eventMain:active {
+  background: var(--fill);
+}
+
+.eventLogo {
+  --logo-size: 40px;
+}
+
+.eventText {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.eventName {
+  overflow: hidden;
+  font-size: 16px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eventKind {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--label-secondary);
+  font-size: 13px;
+}
+
+.eventAmount {
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pay {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  margin: 0 16px 14px 68px;
+  padding: 0 16px 0 12px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--label);
+  font-size: 15px;
+  font-weight: 600;
+  transition: transform 0.3s var(--ease-spring);
+}
+
+.pay svg {
+  width: 17px;
+  height: 17px;
+  color: var(--green);
+}
+
+.pay:active {
+  transform: scale(1.05);
+}
+
+@media (max-width: 380px) {
+  .day {
+    min-height: 48px;
+  }
+
+  .dayNumber {
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+  }
+}

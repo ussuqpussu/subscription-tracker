@@ -1,24 +1,27 @@
 import { useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from 'react'
-import type { StatusFilter } from '../utils/subscriptionUtils'
 import styles from './BottomBar.module.css'
-import { ListIcon, PauseCircleIcon, PlayCircleIcon, PlusIcon, XCircleIcon } from './icons'
+import { CalendarIcon, ChartIcon, ListIcon, PlusIcon, SlidersIcon } from './icons'
 
-const TABS: readonly { value: StatusFilter; label: string; icon: ReactNode }[] = [
-  { value: 'all', label: 'Все', icon: <ListIcon /> },
-  { value: 'active', label: 'Активные', icon: <PlayCircleIcon /> },
-  { value: 'paused', label: 'Пауза', icon: <PauseCircleIcon /> },
-  { value: 'cancelled', label: 'Отменены', icon: <XCircleIcon /> },
+export type AppTab = 'home' | 'stats' | 'calendar'
+
+const TABS: readonly { value: AppTab; label: string; icon: ReactNode }[] = [
+  { value: 'home', label: 'Главная', icon: <ListIcon /> },
+  { value: 'stats', label: 'Статистика', icon: <ChartIcon /> },
+  { value: 'calendar', label: 'Календарь', icon: <CalendarIcon /> },
 ]
 
 /** Внутренний отступ панели — совпадает с padding в CSS. */
 const BAR_PADDING = 4
-/** Палец сдвинулся дальше — это уже перетаскивание линзы, а не касание. */
+/** Палец сдвинулся дальше — это перетаскивание линзы, а не касание. */
 const DRAG_THRESHOLD = 6
 
 interface BottomBarProps {
-  /** null — панель статусов скрыта (список пуст), остаётся только кнопка «+». */
-  status: StatusFilter | null
-  onStatusChange: (status: StatusFilter) => void
+  /** null — разделы скрыты (список пуст), остаётся только кнопка «+». */
+  tab: AppTab | null
+  onTabChange: (tab: AppTab) => void
+  onFilters: () => void
+  /** Фильтр по статусу или категории отличается от «все». */
+  filtersActive: boolean
   onAdd: () => void
 }
 
@@ -29,18 +32,18 @@ interface Drag {
 }
 
 /**
- * Плавающая стеклянная панель вкладок в духе Telegram: выбранную вкладку подсвечивает
- * стеклянная линза. Линзу можно вести пальцем по панели — вкладка выбирается, когда палец отпущен.
+ * Плавающая стеклянная панель разделов в духе Telegram: выбранный раздел подсвечивает
+ * стеклянная линза, её можно вести пальцем. Слева — фильтры списка, справа — добавление.
  */
-export function BottomBar({ status, onStatusChange, onAdd }: BottomBarProps) {
+export function BottomBar({ tab, onTabChange, onFilters, filtersActive, onAdd }: BottomBarProps) {
   const navRef = useRef<HTMLElement>(null)
   const dragRef = useRef<Drag | null>(null)
-  // Во время перетаскивания: смещение линзы в px и вкладка под пальцем.
+  // Во время перетаскивания: смещение линзы в px и раздел под пальцем.
   const [dragPosition, setDragPosition] = useState<{ x: number; index: number } | null>(null)
 
   const selectedIndex = Math.max(
     0,
-    TABS.findIndex((tab) => tab.value === status),
+    TABS.findIndex((item) => item.value === tab),
   )
   const highlightedIndex = dragPosition?.index ?? selectedIndex
 
@@ -77,7 +80,7 @@ export function BottomBar({ status, onStatusChange, onAdd }: BottomBarProps) {
     dragRef.current = null
     if (!drag.active) return
     setDragPosition(null)
-    if (event.type === 'pointerup') onStatusChange(TABS[locate(event.clientX).index].value)
+    if (event.type === 'pointerup') onTabChange(TABS[locate(event.clientX).index].value)
   }
 
   const lensStyle = {
@@ -88,32 +91,45 @@ export function BottomBar({ status, onStatusChange, onAdd }: BottomBarProps) {
 
   return (
     <div className={styles.dock}>
-      {status !== null && (
+      {tab === 'home' && (
+        <button
+          type="button"
+          className={`glass ${styles.round}`}
+          aria-label="Фильтры списка"
+          data-active={filtersActive}
+          onClick={onFilters}
+        >
+          <SlidersIcon />
+        </button>
+      )}
+
+      {tab !== null && (
         <nav
           ref={navRef}
           className={`glass ${styles.tabs}`}
-          aria-label="Статус подписок"
+          aria-label="Разделы"
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerEnd}
           onPointerCancel={handlePointerEnd}
         >
           <span className={styles.lens} data-dragging={dragPosition !== null} style={lensStyle} aria-hidden="true" />
-          {TABS.map((tab, index) => (
+          {TABS.map((item, index) => (
             <button
-              key={tab.value}
+              key={item.value}
               type="button"
               className={styles.tab}
-              aria-pressed={status === tab.value}
+              aria-pressed={tab === item.value}
               data-highlighted={index === highlightedIndex}
-              onClick={() => onStatusChange(tab.value)}
+              onClick={() => onTabChange(item.value)}
             >
-              {tab.icon}
-              <span className={styles.label}>{tab.label}</span>
+              {item.icon}
+              <span className={styles.label}>{item.label}</span>
             </button>
           ))}
         </nav>
       )}
+
       <button type="button" className={`glass ${styles.add}`} aria-label="Добавить подписку" onClick={onAdd}>
         <PlusIcon />
       </button>

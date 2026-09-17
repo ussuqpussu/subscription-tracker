@@ -202,6 +202,36 @@
   text-align: right;
 }
 
+/* Дата с кнопкой очистки: крестик появляется, когда дата задана. */
+.dateRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.clearDate {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--fill);
+  color: var(--label-secondary);
+  transition: transform 0.18s var(--ease-out);
+}
+
+.clearDate svg {
+  width: 13px;
+  height: 13px;
+}
+
+.clearDate:active {
+  transform: scale(0.9);
+}
+
 .selectWrap {
   position: relative;
   display: inline-flex;

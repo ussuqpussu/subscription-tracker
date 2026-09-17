@@ -43,6 +43,13 @@ export function formatDate(date: Date, today: Date = new Date()): string {
     : fullDateFormatter.format(date)
 }
 
+const monthYearFormatter = new Intl.DateTimeFormat(LOCALE, { month: 'long', year: 'numeric' })
+
+/** «сентябрь 2026 г.» — заголовок месяца в календаре. */
+export function formatMonthYear(date: Date): string {
+  return monthYearFormatter.format(date).replace(' г.', '')
+}
+
 /** Первая буква названия для плитки-аватара. Array.from не разрезает эмодзи пополам. */
 export function getInitial(text: string): string {
   return (Array.from(text.trim())[0] ?? '').toLocaleUpperCase('ru')

@@ -1,48 +1,10 @@
-.sheet {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  max-height: inherit;
-}
-
-.header {
+.view {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 8px;
-  padding: 18px 8px 10px;
-  border-bottom: 1px solid var(--separator);
-}
-
-.title {
-  grid-column: 2;
-  font-size: 17px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.close {
-  justify-self: end;
-  min-height: 44px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--accent-text);
-  font-size: 17px;
-  font-weight: 600;
-}
-
-.close:active {
-  background: var(--fill);
 }
 
 .body {
   display: grid;
   gap: 16px;
-  padding: 16px 16px calc(28px + env(safe-area-inset-bottom, 0px));
-  overflow-y: auto;
-  overscroll-behavior: contain;
 }
 
 .card {

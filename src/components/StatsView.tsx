@@ -3,24 +3,19 @@ import { formatMoney } from '../utils/format'
 import type { Rates } from '../utils/rates'
 import { getCategoryShares, getSpent, getTips, type CategoryShare } from '../utils/stats'
 import type { Subscription } from '../types'
-import { Sheet } from './Sheet'
-import styles from './StatsSheet.module.css'
-
-const TITLE_ID = 'stats-title'
+import styles from './StatsView.module.css'
 
 /** Цвета долей: повторяются по кругу, если категорий больше. */
 const COLORS = ['#ffb4a2', '#5e9cff', '#30d158', '#ffd60a', '#bf8cff', '#ff6f91', '#6fd3d6']
 
-interface StatsSheetProps {
-  open: boolean
-  onClose: () => void
+interface StatsViewProps {
   subscriptions: readonly Subscription[]
   today: Date
   rates: Rates | null
 }
 
 /** Статистика: на что уходят деньги, сколько оплачено и что стоит проверить. */
-export function StatsSheet({ open, onClose, subscriptions, today, rates }: StatsSheetProps) {
+export function StatsView({ subscriptions, today, rates }: StatsViewProps) {
   const shares = getCategoryShares(subscriptions, rates)
   const tips = getTips(subscriptions, today, rates)
   const monthStart = makeDate(today.getFullYear(), today.getMonth(), 1)
@@ -38,18 +33,8 @@ export function StatsSheet({ open, onClose, subscriptions, today, rates }: Stats
   }, [])
 
   return (
-    <Sheet open={open} onClose={onClose} labelledBy={TITLE_ID}>
-      <div className={styles.sheet}>
-        <header className={styles.header} data-sheet-drag>
-          <h2 id={TITLE_ID} className={styles.title}>
-            Статистика
-          </h2>
-          <button type="button" className={styles.close} data-autofocus onClick={onClose}>
-            Готово
-          </button>
-        </header>
-
-        <div className={styles.body}>
+    <section className={styles.view} aria-label="Статистика">
+      <div className={styles.body}>
           <section className={`card ${styles.card}`} aria-labelledby="stats-spent">
             <h3 id="stats-spent" className={styles.cardTitle}>
               Оплачено
@@ -118,8 +103,7 @@ export function StatsSheet({ open, onClose, subscriptions, today, rates }: Stats
               </ul>
             </section>
           )}
-        </div>
       </div>
-    </Sheet>
+    </section>
   )
 }

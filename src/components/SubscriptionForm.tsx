@@ -26,7 +26,7 @@ import {
   type DraftField,
   type SubscriptionDraft,
 } from '../utils/validation'
-import { ArrowUpRightIcon, CalendarPlusIcon, CheckIcon, ChevronDownIcon, TrashIcon } from './icons'
+import { ArrowUpRightIcon, CalendarPlusIcon, CheckIcon, ChevronDownIcon, TrashIcon, XIcon } from './icons'
 import { Logo } from './Logo'
 import { ReminderPicker } from './ReminderPicker'
 import { SegmentedControl, type SegmentOption } from './SegmentedControl'
@@ -322,26 +322,39 @@ function FormContent({
               max="2100-12-31"
               className={`tabular ${styles.inlineInput} ${styles.dateInput}`}
               value={draft.startDate}
-              onChange={(event) => update('startDate', event.target.value)}
+              // Кнопка «Сбросить» в системном календаре присылает пустую строку: дата платежа обязательна.
+              onChange={(event) => update('startDate', event.target.value || toISODate(today))}
               {...errorProps('startDate')}
             />
           </Row>
           {renderError('startDate')}
 
           <Row label="Пробный до" htmlFor={id('trialUntil')}>
-            <input
-              id={id('trialUntil')}
-              ref={(element) => {
-                fieldRefs.current.trialUntil = element
-              }}
-              type="date"
-              min="1970-01-01"
-              max="2100-12-31"
-              className={`tabular ${styles.inlineInput} ${styles.dateInput}`}
-              value={draft.trialUntil}
-              onChange={(event) => update('trialUntil', event.target.value)}
-              {...errorProps('trialUntil')}
-            />
+            <span className={styles.dateRow}>
+              <input
+                id={id('trialUntil')}
+                ref={(element) => {
+                  fieldRefs.current.trialUntil = element
+                }}
+                type="date"
+                min="1970-01-01"
+                max="2100-12-31"
+                className={`tabular ${styles.inlineInput} ${styles.dateInput}`}
+                value={draft.trialUntil}
+                onChange={(event) => update('trialUntil', event.target.value)}
+                {...errorProps('trialUntil')}
+              />
+              {draft.trialUntil && (
+                <button
+                  type="button"
+                  className={styles.clearDate}
+                  aria-label="Убрать пробный период"
+                  onClick={() => update('trialUntil', '')}
+                >
+                  <XIcon />
+                </button>
+              )}
+            </span>
           </Row>
           {renderError('trialUntil')}
 

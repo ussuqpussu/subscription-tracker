@@ -226,3 +226,41 @@ export function CloudIcon(props: IconProps) {
     </Icon>
   )
 }
+
+export function CalendarIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="3.5" y="5" width="17" height="15.5" rx="3.5" />
+      <path d="M3.5 9.8h17M8 3.2v3.4M16 3.2v3.4" />
+      <circle cx="8.5" cy="13.5" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="13.5" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="15.5" cy="13.5" r="1.1" fill="currentColor" stroke="none" />
+    </Icon>
+  )
+}
+
+export function ChevronLeftIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={2.2} {...props}>
+      <path d="m14 7-5 5 5 5" />
+    </Icon>
+  )
+}
+
+export function ChevronRightIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={2.2} {...props}>
+      <path d="m10 7 5 5-5 5" />
+    </Icon>
+  )
+}
+
+export function SlidersIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4 8h9M17 8h3M4 16h3M11 16h9" />
+      <circle cx="15" cy="8" r="2.2" />
+      <circle cx="9" cy="16" r="2.2" />
+    </Icon>
+  )
+}

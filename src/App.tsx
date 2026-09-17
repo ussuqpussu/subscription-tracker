@@ -1,17 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
 import styles from './App.module.css'
 import { BackupReminder } from './components/BackupReminder'
-import { BottomBar } from './components/BottomBar'
+import { BottomBar, type AppTab } from './components/BottomBar'
+import { CalendarView } from './components/CalendarView'
 import { ConfirmSheet, type ConfirmRequest } from './components/ConfirmSheet'
 import { EmptyState } from './components/EmptyState'
-import { Filters } from './components/Filters'
-import { ArrowDownDocIcon, ArrowUpDocIcon, CalendarPlusIcon, ChartIcon, CloudIcon, TrashIcon } from './components/icons'
+import { FiltersSheet } from './components/FiltersSheet'
+import { ArrowDownDocIcon, ArrowUpDocIcon, CalendarPlusIcon, CloudIcon, TrashIcon } from './components/icons'
 import type { MenuItem } from './components/MoreMenu'
 import { NavBar } from './components/NavBar'
 import { NextPayment } from './components/NextPayment'
 import { NotificationsSheet, type PushMessage } from './components/NotificationsSheet'
 import { SearchField } from './components/SearchField'
-import { StatsSheet } from './components/StatsSheet'
+import { StatsView } from './components/StatsView'
 import { SyncSheet, type SyncMessage } from './components/SyncSheet'
 import { SubscriptionForm, type SubscriptionValue } from './components/SubscriptionForm'
 import { SubscriptionList } from './components/SubscriptionList'
@@ -85,7 +86,8 @@ export default function App() {
   const [confirm, setConfirm] = useState<ConfirmRequest | null>(null)
   const [toast, setToast] = useState<ToastMessage | null>(null)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
-  const [statsOpen, setStatsOpen] = useState(false)
+  const [tab, setTab] = useState<AppTab>('home')
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [syncOpen, setSyncOpen] = useState(false)
   const [syncBusy, setSyncBusy] = useState(false)
   const [syncMessage, setSyncMessage] = useState<SyncMessage | null>(null)
@@ -100,6 +102,7 @@ export default function App() {
   const categories = useMemo(() => collectCategories(subscriptions), [subscriptions])
   // Если категорию удалили или переименовали, фильтр по ней молча сбрасывается.
   const activeCategory = categoryFilter !== null && categories.includes(categoryFilter) ? categoryFilter : null
+  const filtersActive = statusFilter !== 'all' || activeCategory !== null
   const visibleSubscriptions = useMemo(
     () =>
       sortSubscriptions(
@@ -361,13 +364,6 @@ export default function App() {
       },
     },
     {
-      id: 'stats',
-      label: 'Статистика',
-      icon: <ChartIcon />,
-      disabled: subscriptions.length === 0,
-      onSelect: () => setStatsOpen(true),
-    },
-    {
       id: 'export-all',
       label: 'Все в календарь',
       icon: <CalendarPlusIcon />,
@@ -406,6 +402,17 @@ export default function App() {
       <main className={styles.main}>
         {subscriptions.length === 0 ? (
           <EmptyState variant="empty" onAction={openCreate} />
+        ) : tab === 'stats' ? (
+          <StatsView subscriptions={subscriptions} today={today} rates={rates} />
+        ) : tab === 'calendar' ? (
+          <CalendarView
+            subscriptions={subscriptions}
+            today={today}
+            rates={rates}
+            hidden={hideAmounts}
+            onOpen={(subscription) => setEditor({ mode: 'edit', id: subscription.id })}
+            onMarkPaid={handleMarkPaid}
+          />
         ) : (
           <>
             {needsBackup && (
@@ -428,12 +435,6 @@ export default function App() {
               onOpen={(subscription) => setEditor({ mode: 'edit', id: subscription.id })}
             />
             {subscriptions.length >= 6 && <SearchField value={searchQuery} onChange={setSearchQuery} />}
-            <Filters
-              categories={categories}
-              category={activeCategory}
-              onCategoryChange={setCategoryFilter}
-              onAdd={openCreate}
-            />
             {visibleSubscriptions.length === 0 ? (
               <EmptyState variant="filtered" onAction={resetFilters} />
             ) : (
@@ -451,8 +452,10 @@ export default function App() {
       </main>
 
       <BottomBar
-        status={subscriptions.length > 0 ? statusFilter : null}
-        onStatusChange={setStatusFilter}
+        tab={subscriptions.length > 0 ? tab : null}
+        onTabChange={setTab}
+        onFilters={() => setFiltersOpen(true)}
+        filtersActive={filtersActive}
         onAdd={openCreate}
       />
 
@@ -478,12 +481,17 @@ export default function App() {
         onExportAll={handleExportAll}
         exportDisabled={subscriptions.length === 0}
       />
-      <StatsSheet
-        open={statsOpen}
-        onClose={() => setStatsOpen(false)}
+      <FiltersSheet
+        open={filtersOpen}
+        onClose={() => setFiltersOpen(false)}
         subscriptions={subscriptions}
-        today={today}
         rates={rates}
+        status={statusFilter}
+        onStatusChange={setStatusFilter}
+        categories={categories}
+        category={activeCategory}
+        onCategoryChange={setCategoryFilter}
+        onReset={resetFilters}
       />
       <SyncSheet
         open={syncOpen}
