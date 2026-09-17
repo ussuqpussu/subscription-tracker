@@ -17,8 +17,8 @@ interface SubscriptionRowProps {
   onDelete: (subscription: Subscription) => void
 }
 
-/** Ширина открытой кнопки «Удалить» — совпадает с CSS. */
-const REVEAL_WIDTH = 96
+/** Ширина открытой кнопки удаления справа — совпадает с CSS. */
+const REVEAL_WIDTH = 80
 /** Палец сдвинулся по горизонтали дальше — это свайп, а не касание или прокрутка. */
 const DRAG_START = 10
 /** Протянули дальше этой доли ширины строки — сразу спрашиваем об удалении. */
@@ -68,7 +68,8 @@ export function SubscriptionRow({
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (event.pointerType === 'mouse' && event.button !== 0) return
     suppressClickRef.current = false
-    const base = revealed ? REVEAL_WIDTH : 0
+    // Строка уезжает влево: смещение отрицательное.
+    const base = revealed ? -REVEAL_WIDTH : 0
     dragRef.current = {
       pointerId: event.pointerId,
       startX: event.clientX,
@@ -96,7 +97,7 @@ export function SubscriptionRow({
       content.setPointerCapture(event.pointerId)
       content.dataset.dragging = 'true'
     }
-    drag.offset = Math.max(0, drag.base + dx)
+    drag.offset = Math.min(0, drag.base + dx)
     content.style.transform = `translateX(${drag.offset}px)`
   }
 
@@ -110,8 +111,9 @@ export function SubscriptionRow({
     suppressClickRef.current = true
     delete content.dataset.dragging
     content.style.transform = ''
-    const fullSwipe = event.type === 'pointerup' && drag.offset > content.offsetWidth * FULL_SWIPE
-    setRevealed(!fullSwipe && drag.offset > REVEAL_WIDTH / 2)
+    const distance = -drag.offset
+    const fullSwipe = event.type === 'pointerup' && distance > content.offsetWidth * FULL_SWIPE
+    setRevealed(!fullSwipe && distance > REVEAL_WIDTH / 2)
     if (fullSwipe) onDelete(subscription)
   }
 
@@ -133,6 +135,7 @@ export function SubscriptionRow({
       <button
         type="button"
         className={styles.deleteAction}
+        aria-label={`Удалить «${subscription.name}»`}
         tabIndex={revealed ? 0 : -1}
         aria-hidden={!revealed}
         onClick={() => {
@@ -141,7 +144,6 @@ export function SubscriptionRow({
         }}
       >
         <TrashIcon />
-        Удалить
       </button>
 
       <div
