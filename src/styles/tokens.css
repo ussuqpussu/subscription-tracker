@@ -9,10 +9,9 @@
 
   --font-text: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI Variable Text', 'Segoe UI', system-ui,
     'Helvetica Neue', Arial, sans-serif;
-  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI Variable Display', 'Segoe UI',
-    system-ui, 'Helvetica Neue', Arial, sans-serif;
-  /* New York — только для крупных сумм. */
-  --font-serif: ui-serif, 'New York', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  /* SF Pro Rounded — мягкий шрифт для крупных сумм и заголовков, как в банковских приложениях. */
+  --font-rounded: ui-rounded, 'SF Pro Rounded', -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Display',
+    system-ui, sans-serif;
 
   /* Фон и поверхности: глубина за счёт ступеней яркости и тонкой рамки, без теней */
   --bg: #000000;
@@ -32,18 +31,18 @@
   --backdrop-dim: rgba(0, 0, 0, 0.6);
 
   /* Семантические акценты */
-  /* Пастельный барвинок: мягче системного синего, тёмный текст на заливке читается с контрастом > 9:1. */
-  --accent: #b4befe;
-  --accent-pressed: #9aa6f5;
-  --accent-text: #b4befe;
-  --accent-tint: rgba(180, 190, 254, 0.14);
-  --on-accent: #11111b;
-  --focus: #b4befe;
+  /* Пастельный персик: тёмный текст на заливке читается с контрастом > 10:1. */
+  --accent: #ffb4a2;
+  --accent-pressed: #f59a86;
+  --accent-text: #ffb4a2;
+  --accent-tint: rgba(255, 180, 162, 0.14);
+  --on-accent: #3a1408;
+  --focus: #ffb4a2;
   --green: #30d158;
   --red: #ff453a;
 
-  /* Градиент выделенной карточки ближайшего платежа */
-  --grad-violet: linear-gradient(135deg, #5e5ce6 0%, #0a84ff 100%);
+  /* Градиент карточки ближайшего платежа: малиновый → персиковый, притемнён под белый текст */
+  --grad-card: linear-gradient(135deg, #d9486f 0%, #e98b4f 100%);
 
   /* Лампочки: яркие цвета для свечения и отдельные — для текста */
   --lamp-green: #30d158;

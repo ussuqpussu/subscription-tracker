@@ -39,7 +39,7 @@ p {
 h1,
 h2,
 h3 {
-  font-family: var(--font-display);
+  font-family: var(--font-rounded);
   line-height: 1.2;
   letter-spacing: -0.022em;
 }

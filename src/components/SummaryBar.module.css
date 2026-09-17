@@ -31,11 +31,11 @@
   height: 20px;
 }
 
-/* Крупная сумма — единственное место с засечками (New York). */
+/* Крупная сумма — скруглённый SF Pro Rounded. */
 .total {
-  font-family: var(--font-serif);
+  font-family: var(--font-rounded);
   font-size: 40px;
-  font-weight: 400;
+  font-weight: 600;
   line-height: 1.1;
   letter-spacing: -0.02em;
   overflow-wrap: anywhere;

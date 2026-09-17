@@ -5,7 +5,7 @@
   padding: 16px;
   border: 0;
   border-radius: var(--radius-card);
-  background: var(--grad-violet);
+  background: var(--grad-card);
   color: #ffffff;
   text-align: left;
   transition: transform 0.2s var(--ease-out);
@@ -64,8 +64,14 @@
   font-weight: 500;
 }
 
+/* Красная лампочка сливается с малиновым фоном: обводим её белым. */
+.due > :first-child {
+  outline: 1.5px solid rgba(255, 255, 255, 0.9);
+}
+
 .amount {
-  font-family: var(--font-serif);
+  font-family: var(--font-rounded);
+  font-weight: 600;
   font-size: 26px;
   line-height: 1.1;
   letter-spacing: -0.02em;
