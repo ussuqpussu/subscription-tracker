@@ -1,7 +1,8 @@
 import { useState } from 'react'
+import { API_URL } from '../config'
 import type { Subscription } from '../types'
 import { getInitial } from '../utils/format'
-import { getSiteLogoUrl } from '../utils/logo'
+import { getSiteLogoUrls } from '../utils/logo'
 import styles from './Logo.module.css'
 
 interface LogoProps {
@@ -13,19 +14,23 @@ interface LogoProps {
 const MIN_SITE_ICON_SIZE = 17
 
 /**
- * Плитка-логотип: свой логотип → значок сайта → первая буква названия.
- * Размер задаёт родитель через --logo-size.
+ * Плитка-логотип: свой логотип → чёткая иконка с сайта → значок Google → первая буква названия.
+ * Если картинка не загрузилась, берётся следующий источник. Размер задаёт родитель через --logo-size.
  */
 export function Logo({ subscription, className }: LogoProps) {
   const { name, url, logo } = subscription
-  const source = logo ?? (url ? getSiteLogoUrl(url) : null)
-  const [failedSource, setFailedSource] = useState<string | null>(null)
-  const showImage = source !== null && source !== failedSource
-  const kind = !showImage ? 'letter' : logo ? 'custom' : 'site'
+  const sources = logo ? [logo] : url ? getSiteLogoUrls(url, API_URL) : []
+  const sourcesKey = sources.join('\n')
+  // Номер источника привязан к списку: сменилась ссылка — перебор начинается заново.
+  const [attempt, setAttempt] = useState({ key: sourcesKey, index: 0 })
+  const index = attempt.key === sourcesKey ? attempt.index : 0
+  const source = sources[index]
+  const kind = !source ? 'letter' : logo ? 'custom' : 'site'
+  const tryNext = () => setAttempt({ key: sourcesKey, index: index + 1 })
 
   return (
     <span className={`${styles.logo} ${className ?? ''}`} data-kind={kind} aria-hidden="true">
-      {showImage ? (
+      {source ? (
         <img
           key={source}
           className={styles.image}
@@ -34,9 +39,9 @@ export function Logo({ subscription, className }: LogoProps) {
           decoding="async"
           referrerPolicy="no-referrer"
           draggable={false}
-          onError={() => setFailedSource(source)}
+          onError={tryNext}
           onLoad={(event) => {
-            if (!logo && event.currentTarget.naturalWidth < MIN_SITE_ICON_SIZE) setFailedSource(source)
+            if (!logo && event.currentTarget.naturalWidth < MIN_SITE_ICON_SIZE) tryNext()
           }}
         />
       ) : (

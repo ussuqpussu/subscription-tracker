@@ -3,10 +3,10 @@
  * Адрес сервера и публичный VAPID-ключ задаются при сборке (.env.production).
  * Без них пуши выключены, а напоминания работают только через календарь.
  */
+import { API_URL as apiUrl } from '../config'
 import type { Subscription } from '../types'
 import { buildPushReminders } from './pushReminders'
 
-const apiUrl = String(import.meta.env.VITE_PUSH_API_URL ?? '').replace(/\/+$/, '')
 const vapidPublicKey = String(import.meta.env.VITE_VAPID_PUBLIC_KEY ?? '')
 
 export const isPushConfigured = apiUrl !== '' && vapidPublicKey !== ''

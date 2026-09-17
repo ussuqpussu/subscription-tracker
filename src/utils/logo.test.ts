@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getDisplayHost, getSiteLogoUrl, isValidLogo, MAX_LOGO_LENGTH, normalizeUrl } from './logo'
+import { getDisplayHost, getSiteLogoUrls, isValidLogo, MAX_LOGO_LENGTH, normalizeUrl } from './logo'
 
 describe('ссылка на сайт', () => {
   it('дописывает https и нормализует адрес', () => {
@@ -20,10 +20,13 @@ describe('ссылка на сайт', () => {
 
   it('подпись и адрес значка', () => {
     expect(getDisplayHost('https://www.kinopoisk.ru/subscriptions')).toBe('kinopoisk.ru')
-    expect(getSiteLogoUrl('https://www.kinopoisk.ru/x')).toBe(
-      'https://www.google.com/s2/favicons?sz=128&domain=www.kinopoisk.ru',
-    )
-    expect(getSiteLogoUrl('не ссылка')).toBeNull()
+    const google = 'https://www.google.com/s2/favicons?sz=128&domain=www.kinopoisk.ru'
+    expect(getSiteLogoUrls('https://www.kinopoisk.ru/x', 'https://api.example.dev')).toEqual([
+      'https://api.example.dev/api/logo?host=www.kinopoisk.ru',
+      google,
+    ])
+    expect(getSiteLogoUrls('https://www.kinopoisk.ru/x', '')).toEqual([google])
+    expect(getSiteLogoUrls('не ссылка', '')).toEqual([])
   })
 })
 

@@ -5,6 +5,15 @@
  * здесь хранятся лишь тексты ближайших напоминаний.
  */
 import { buildPushPayload, type PushSubscription } from '@block65/webcrypto-web-push'
+import {
+  iconsFromLinks,
+  iconsFromManifest,
+  isValidHost,
+  MAX_ICON_BYTES,
+  rankIcons,
+  type IconCandidate,
+  type LinkTag,
+} from './logo'
 import { parseEndpointRequest, parseSubscribeRequest, type DeviceKeys } from './validate'
 
 export interface Env {
@@ -155,6 +164,108 @@ async function handleTest(request: Request, env: Env, cors: Record<string, strin
   return status >= 200 && status < 300 ? json(200, {}, cors) : json(502, { error: `push service ${status}` }, cors)
 }
 
+const LOGO_TTL_SECONDS = 7 * 24 * 60 * 60
+const LOGO_MISS_TTL_SECONDS = 24 * 60 * 60
+const LOGO_FETCH_TIMEOUT_MS = 5000
+/** Сколько лучших кандидатов пробуем скачать: у бесплатного тарифа 50 исходящих запросов. */
+const LOGO_MAX_ATTEMPTS = 4
+const BOT_HEADERS = { 'User-Agent': 'Mozilla/5.0 (compatible; SubscriptionTrackerLogo/1.0)' }
+
+function fetchWithTimeout(url: string, accept: string): Promise<Response> {
+  return fetch(url, {
+    headers: { ...BOT_HEADERS, Accept: accept },
+    redirect: 'follow',
+    signal: AbortSignal.timeout(LOGO_FETCH_TIMEOUT_MS),
+  })
+}
+
+async function collectIcons(host: string): Promise<IconCandidate[]> {
+  const page = await fetchWithTimeout(`https://${host}/`, 'text/html')
+  const pageUrl = page.url || `https://${host}/`
+  const links: LinkTag[] = []
+  let manifestHref: string | null = null
+  if (page.ok && (page.headers.get('Content-Type') ?? '').includes('html')) {
+    // HTMLRewriter разбирает страницу потоком: нужны только <link> из разметки.
+    await new HTMLRewriter()
+      .on('link[rel][href]', {
+        element(element) {
+          const rel = element.getAttribute('rel') ?? ''
+          const href = element.getAttribute('href') ?? ''
+          if (rel.toLowerCase().split(/\s+/).includes('manifest')) manifestHref ??= href
+          else links.push({ rel, href, sizes: element.getAttribute('sizes'), type: element.getAttribute('type') })
+        },
+      })
+      .transform(page)
+      .arrayBuffer()
+  }
+
+  const icons = iconsFromLinks(links, pageUrl)
+  if (manifestHref) {
+    try {
+      const manifestUrl = new URL(manifestHref, pageUrl).href
+      const response = await fetchWithTimeout(manifestUrl, 'application/manifest+json, application/json')
+      if (response.ok) icons.push(...iconsFromManifest(await response.json(), manifestUrl))
+    } catch {
+      // Битый manifest не мешает остальным иконкам.
+    }
+  }
+  // Многие сайты кладут иконку по стандартному адресу, не объявляя её в разметке.
+  icons.push({ url: new URL('/apple-touch-icon.png', pageUrl).href, size: 180 })
+  return rankIcons(icons)
+}
+
+async function fetchIcon(url: string): Promise<Response | null> {
+  try {
+    const response = await fetchWithTimeout(url, 'image/*')
+    const type = response.headers.get('Content-Type') ?? ''
+    if (!response.ok || !type.startsWith('image/')) return null
+    const body = await response.arrayBuffer()
+    if (body.byteLength === 0 || body.byteLength > MAX_ICON_BYTES) return null
+    return new Response(body, {
+      headers: {
+        'Content-Type': type,
+        'Cache-Control': `public, max-age=${LOGO_TTL_SECONDS}`,
+        'Access-Control-Allow-Origin': '*',
+        // SVG открывается только как картинка: скрипты внутри не выполнятся.
+        'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; sandbox",
+        'X-Content-Type-Options': 'nosniff',
+      },
+    })
+  } catch {
+    return null
+  }
+}
+
+/**
+ * GET /api/logo?host=kinopoisk.ru — самая чёткая иконка сайта.
+ * Запрос идёт из <img>, поэтому без проверки Origin. Ответы кэшируются на неделю, промахи — на сутки.
+ */
+async function handleLogo(request: Request, ctx: ExecutionContext): Promise<Response> {
+  const host = new URL(request.url).searchParams.get('host')
+  if (!isValidHost(host)) return new Response('invalid host', { status: 400 })
+
+  const cacheKey = new Request(`https://logo-cache.internal/${host}`)
+  const cached = await caches.default.match(cacheKey)
+  if (cached) return cached
+
+  let response: Response | null = null
+  try {
+    const icons = await collectIcons(host)
+    for (const icon of icons.slice(0, LOGO_MAX_ATTEMPTS)) {
+      response = await fetchIcon(icon.url)
+      if (response) break
+    }
+  } catch {
+    response = null
+  }
+  response ??= new Response('logo not found', {
+    status: 404,
+    headers: { 'Cache-Control': `public, max-age=${LOGO_MISS_TTL_SECONDS}`, 'Access-Control-Allow-Origin': '*' },
+  })
+  ctx.waitUntil(caches.default.put(cacheKey, response.clone()))
+  return response
+}
+
 async function sendDueReminders(env: Env): Promise<void> {
   const now = Date.now()
   await env.DB.batch([
@@ -200,7 +311,9 @@ async function sendDueReminders(env: Env): Promise<void> {
 }
 
 export default {
-  async fetch(request, env): Promise<Response> {
+  async fetch(request, env, ctx): Promise<Response> {
+    if (request.method === 'GET' && new URL(request.url).pathname === '/api/logo') return handleLogo(request, ctx)
+
     const cors = corsHeaders(request, env)
     if (!cors) return new Response('Forbidden', { status: 403 })
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors })

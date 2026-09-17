@@ -42,11 +42,18 @@ export function isValidLogo(value: unknown): value is string {
   return typeof value === 'string' && value.length <= MAX_LOGO_LENGTH && LOGO_RE.test(value)
 }
 
-/** Значок сайта из сервиса Google: 128 px, если сайт отдаёт такой размер. */
-export function getSiteLogoUrl(url: string): string | null {
+/**
+ * Адреса логотипа сайта от лучшего к запасному: сначала сервер приложения ищет самую чёткую
+ * иконку на самом сайте (SVG, apple-touch-icon, manifest), затем значок из сервиса Google.
+ */
+export function getSiteLogoUrls(url: string, apiUrl: string): string[] {
+  let host: string
   try {
-    return `https://www.google.com/s2/favicons?sz=128&domain=${encodeURIComponent(new URL(url).hostname)}`
+    host = new URL(url).hostname
   } catch {
-    return null
+    return []
   }
+  const encoded = encodeURIComponent(host)
+  const google = `https://www.google.com/s2/favicons?sz=128&domain=${encoded}`
+  return apiUrl ? [`${apiUrl}/api/logo?host=${encoded}`, google] : [google]
 }
