@@ -1,0 +1,25 @@
+.filters {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* Категории прокручиваются вбок и уходят под край экрана, как в iOS. */
+.chips {
+  display: flex;
+  gap: 8px;
+  margin: 0 -16px;
+  padding: 2px 16px 4px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chips::-webkit-scrollbar {
+  display: none;
+}
+
+.chips :global(.chip) {
+  flex: none;
+}

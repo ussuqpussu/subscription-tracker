@@ -1,0 +1,77 @@
+.dialog {
+  width: 100%;
+  max-width: 100%;
+  max-height: 100dvh;
+  margin: auto auto 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  overflow: visible;
+}
+
+.dialog::backdrop {
+  background: var(--backdrop-dim);
+}
+
+.dialog[open] {
+  display: flex;
+  animation: sheet-in 0.42s var(--ease-out);
+}
+
+.dialog[open]::backdrop {
+  animation: fade-in 0.3s ease;
+}
+
+.surface {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 10px);
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  overflow: hidden;
+}
+
+/* Окно подтверждения: компактная стеклянная карточка по центру. */
+.dialog[data-variant='alert'] {
+  width: min(100% - 48px, 340px);
+  margin: auto;
+  animation: alert-in 0.32s var(--ease-spring);
+}
+
+.dialog[data-variant='alert'] .surface {
+  max-height: none;
+  border-radius: 28px;
+}
+
+@media (min-width: 640px) {
+  .dialog[data-variant='sheet'] {
+    width: min(100% - 48px, 540px);
+    margin: auto;
+    animation: alert-in 0.34s var(--ease-out);
+  }
+
+  .dialog[data-variant='sheet'] .surface {
+    max-height: min(88dvh, 860px);
+    border-radius: var(--radius-sheet);
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes alert-in {
+  from {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}

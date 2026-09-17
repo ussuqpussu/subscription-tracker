@@ -1,0 +1,56 @@
+.summary {
+  display: grid;
+  gap: 4px;
+  padding: 16px 20px 18px;
+  border-radius: var(--radius-group);
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title,
+.count {
+  color: var(--label-secondary);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.totals {
+  display: grid;
+  gap: 2px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.total {
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.total + .total {
+  font-size: 26px;
+}
+
+.empty {
+  padding: 6px 0 2px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.overdue {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  color: var(--text-red);
+  font-size: 15px;
+  font-weight: 600;
+}

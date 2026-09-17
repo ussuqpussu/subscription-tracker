@@ -1,0 +1,43 @@
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 48px 24px 40px;
+  text-align: center;
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+  margin-bottom: 8px;
+  border-radius: 28px;
+  color: var(--label-secondary);
+}
+
+.icon svg {
+  width: 44px;
+  height: 44px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.text {
+  max-width: 30ch;
+  color: var(--label-secondary);
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.action {
+  margin-top: 10px;
+  min-height: 44px;
+  padding: 0 20px;
+  font-weight: 600;
+}

@@ -1,0 +1,57 @@
+.dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  display: flex;
+  justify-content: center;
+  padding: 0 16px calc(14px + env(safe-area-inset-bottom, 0px));
+  pointer-events: none;
+}
+
+.capsule {
+  padding: 5px;
+  border-radius: 999px;
+  pointer-events: auto;
+}
+
+.add {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 176px;
+  min-height: 52px;
+  padding: 0 26px 0 20px;
+  border: 0;
+  border-radius: 999px;
+  background:
+    radial-gradient(120% 90% at 50% -20%, rgba(255, 255, 255, 0.38), transparent 60%),
+    var(--accent);
+  color: var(--on-accent);
+  font-size: 17px;
+  font-weight: 600;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.12),
+    0 6px 18px color-mix(in srgb, var(--accent) 38%, transparent);
+  transition:
+    transform 0.3s var(--ease-spring),
+    background-color 0.2s ease;
+}
+
+.add svg {
+  width: 20px;
+  height: 20px;
+}
+
+.add:active {
+  transform: scale(1.05);
+  background-color: var(--accent-pressed);
+}
+
+.add:focus-visible {
+  outline-offset: 3px;
+}

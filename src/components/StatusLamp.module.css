@@ -1,0 +1,65 @@
+.lamp {
+  --lamp-color: var(--lamp-green);
+  --lamp-size: 13px;
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: var(--lamp-size);
+  height: var(--lamp-size);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 33% 28%, rgba(255, 255, 255, 0.95) 0 13%, rgba(255, 255, 255, 0) 34%),
+    radial-gradient(
+      circle at 50% 58%,
+      color-mix(in srgb, var(--lamp-color) 70%, #ffffff) 0%,
+      var(--lamp-color) 48%,
+      color-mix(in srgb, var(--lamp-color) 72%, #000000) 100%
+    );
+  box-shadow:
+    inset 0 0 0 0.5px color-mix(in srgb, var(--lamp-color) 60%, #000000),
+    0 0 5px 1px color-mix(in srgb, var(--lamp-color) 70%, transparent),
+    0 0 14px 4px color-mix(in srgb, var(--lamp-color) 30%, transparent);
+}
+
+/* Стеклянный колпачок: отражение по нижнему краю. */
+.lamp::after {
+  content: '';
+  position: absolute;
+  inset: 55% 22% 8%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.45), transparent);
+}
+
+.lamp[data-size='small'] {
+  --lamp-size: 10px;
+}
+
+.lamp[data-lamp='yellow'] {
+  --lamp-color: var(--lamp-yellow);
+}
+
+.lamp[data-lamp='red'] {
+  --lamp-color: var(--lamp-red);
+  animation: pulse 2.2s ease-in-out infinite;
+}
+
+.lamp[data-lamp='off'] {
+  --lamp-color: var(--lamp-off);
+  background:
+    radial-gradient(circle at 33% 28%, rgba(255, 255, 255, 0.7) 0 11%, rgba(255, 255, 255, 0) 30%),
+    radial-gradient(circle at 50% 58%, var(--lamp-color) 0%, color-mix(in srgb, var(--lamp-color) 80%, #000000) 100%);
+  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.18);
+}
+
+.lamp[data-lamp='off']::after {
+  opacity: 0.4;
+}
+
+@keyframes pulse {
+  50% {
+    box-shadow:
+      inset 0 0 0 0.5px color-mix(in srgb, var(--lamp-color) 60%, #000000),
+      0 0 8px 2px color-mix(in srgb, var(--lamp-color) 85%, transparent),
+      0 0 22px 8px color-mix(in srgb, var(--lamp-color) 38%, transparent);
+  }
+}

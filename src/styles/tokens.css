@@ -1,0 +1,115 @@
+/*
+ * Дизайн-токены в духе iOS: системная палитра, материалы Liquid Glass, типографика SF.
+ * Цвета текста подобраны с контрастом не ниже 4.5:1 на фоне групп и стекла.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  --font-text: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI Variable Text', 'Segoe UI', system-ui,
+    'Helvetica Neue', Arial, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI Variable Display', 'Segoe UI',
+    system-ui, 'Helvetica Neue', Arial, sans-serif;
+  --font-rounded: ui-rounded, 'SF Pro Rounded', -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Display',
+    system-ui, sans-serif;
+
+  /* Фон и текст */
+  --bg: #eef0f6;
+  --bg-solid: #ffffff;
+  --label: #0b0b0f;
+  --label-secondary: #6e6e73;
+  --label-tertiary: #8e8e93;
+  --separator: rgba(60, 60, 67, 0.2);
+  --fill: rgba(118, 118, 128, 0.12);
+  --fill-strong: rgba(118, 118, 128, 0.2);
+  --group-fill: rgba(255, 255, 255, 0.84);
+  --group-stroke: rgba(255, 255, 255, 0.9);
+  --backdrop-dim: rgba(15, 18, 30, 0.28);
+
+  /* Единственный акцент */
+  --accent: #0071e3;
+  --accent-pressed: #005bbf;
+  --on-accent: #ffffff;
+  --accent-text: #0066cc;
+  --focus: #0a84ff;
+
+  /* Лампочки: яркие цвета для свечения и отдельные — для текста */
+  --lamp-green: #34c759;
+  --lamp-yellow: #ffcc00;
+  --lamp-red: #ff3b30;
+  --lamp-off: #c7c7cc;
+  --text-green: #1f7a35;
+  --text-yellow: #8a5300;
+  --text-red: #c4000f;
+  --text-off: #6e6e73;
+
+  /* Пятна фона, через которые видно стекло */
+  --blob-1: rgba(90, 200, 250, 0.42);
+  --blob-2: rgba(175, 82, 222, 0.26);
+  --blob-3: rgba(255, 149, 0, 0.2);
+  --blob-4: rgba(52, 199, 89, 0.2);
+
+  /* Материал Liquid Glass */
+  --glass-fill: rgba(255, 255, 255, 0.46);
+  --glass-fill-thick: rgba(248, 248, 252, 0.8);
+  --glass-fallback: rgba(248, 248, 252, 0.97);
+  --glass-blur: 16px;
+  --glass-blur-thick: 32px;
+  --glass-saturate: 190%;
+  --glass-rim-strong: rgba(255, 255, 255, 0.95);
+  --glass-rim-soft: rgba(255, 255, 255, 0.35);
+  --glass-rim-far: rgba(255, 255, 255, 0.6);
+  --glass-sheen: rgba(255, 255, 255, 0.55);
+  --glass-inner-glow: rgba(255, 255, 255, 0.45);
+  --glass-inner-shade: rgba(0, 0, 0, 0.04);
+  --glass-shadow: 0 8px 28px rgba(28, 36, 64, 0.12), 0 1px 3px rgba(28, 36, 64, 0.08);
+
+  --radius-group: 26px;
+  --radius-sheet: 30px;
+  --ease-spring: cubic-bezier(0.32, 1.28, 0.54, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #050508;
+    --bg-solid: #000000;
+    --label: #f5f5f7;
+    --label-secondary: #a1a1a6;
+    --label-tertiary: #8e8e93;
+    --separator: rgba(84, 84, 88, 0.55);
+    --fill: rgba(118, 118, 128, 0.24);
+    --fill-strong: rgba(118, 118, 128, 0.36);
+    --group-fill: rgba(28, 28, 32, 0.82);
+    --group-stroke: rgba(255, 255, 255, 0.08);
+    --backdrop-dim: rgba(0, 0, 0, 0.5);
+
+    --accent-text: #4da3ff;
+    --focus: #409cff;
+
+    --lamp-green: #30d158;
+    --lamp-yellow: #ffd60a;
+    --lamp-red: #ff453a;
+    --lamp-off: #636366;
+    --text-green: #30d158;
+    --text-yellow: #ffd60a;
+    --text-red: #ff6961;
+    --text-off: #a1a1a6;
+
+    --blob-1: rgba(10, 132, 255, 0.34);
+    --blob-2: rgba(191, 90, 242, 0.24);
+    --blob-3: rgba(255, 159, 10, 0.12);
+    --blob-4: rgba(48, 209, 88, 0.14);
+
+    --glass-fill: rgba(44, 44, 50, 0.42);
+    --glass-fill-thick: rgba(30, 30, 34, 0.8);
+    --glass-fallback: rgba(28, 28, 32, 0.98);
+    --glass-rim-strong: rgba(255, 255, 255, 0.42);
+    --glass-rim-soft: rgba(255, 255, 255, 0.1);
+    --glass-rim-far: rgba(255, 255, 255, 0.22);
+    --glass-sheen: rgba(255, 255, 255, 0.12);
+    --glass-inner-glow: rgba(255, 255, 255, 0.08);
+    --glass-inner-shade: rgba(0, 0, 0, 0.3);
+    --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+}

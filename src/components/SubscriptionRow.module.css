@@ -1,0 +1,172 @@
+.row {
+  --lamp-text: var(--text-green);
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.row[data-lamp='yellow'] {
+  --lamp-text: var(--text-yellow);
+}
+
+.row[data-lamp='red'] {
+  --lamp-text: var(--text-red);
+}
+
+.row[data-lamp='off'] {
+  --lamp-text: var(--text-off);
+}
+
+/* Разделитель начинается от текста, как в списках iOS. */
+.row + .row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 45px;
+  right: 0;
+  height: 0.5px;
+  background: var(--separator);
+}
+
+.main {
+  display: grid;
+  grid-template-columns: 13px minmax(0, 1fr) auto;
+  column-gap: 16px;
+  align-items: start;
+  min-width: 0;
+  padding: 13px 4px 13px 16px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+
+.main:active {
+  background: var(--fill);
+}
+
+.main:focus-visible {
+  outline-offset: -3px;
+  border-radius: var(--radius-group);
+}
+
+.lamp {
+  display: flex;
+  height: 22px;
+  align-items: center;
+}
+
+.text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.name {
+  overflow: hidden;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 22px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.category {
+  overflow: hidden;
+  color: var(--label-secondary);
+  font-size: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.due {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 8px;
+  margin-top: 1px;
+  font-size: 15px;
+}
+
+.dueText {
+  color: var(--lamp-text);
+  font-weight: 600;
+}
+
+.row[data-lamp='green'] .dueText {
+  font-weight: 500;
+}
+
+.date {
+  color: var(--label-secondary);
+}
+
+.money {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  text-align: right;
+}
+
+.price {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 22px;
+  white-space: nowrap;
+}
+
+.row[data-lamp='off'] .price {
+  color: var(--label-secondary);
+}
+
+.period {
+  color: var(--label-secondary);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.export {
+  margin-right: 8px;
+}
+
+.payRow {
+  grid-column: 1 / -1;
+  padding: 0 16px 14px 45px;
+  margin-top: -4px;
+}
+
+.pay {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 16px 0 12px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--label);
+  font-size: 15px;
+  font-weight: 600;
+  transition: transform 0.3s var(--ease-spring);
+}
+
+.pay svg {
+  width: 17px;
+  height: 17px;
+  color: var(--lamp-text);
+}
+
+.pay:active {
+  transform: scale(1.05);
+}
+
+@media (max-width: 380px) {
+  .main {
+    column-gap: 12px;
+    padding-left: 14px;
+  }
+
+  .export {
+    margin-right: 2px;
+  }
+}

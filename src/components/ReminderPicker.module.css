@@ -1,0 +1,68 @@
+.picker {
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.custom svg {
+  width: 14px;
+  height: 14px;
+  margin-right: -4px;
+  opacity: 0.7;
+}
+
+.customRow {
+  display: flex;
+  gap: 8px;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--fill);
+  font-size: 17px;
+}
+
+.input::placeholder {
+  color: var(--label-secondary);
+}
+
+.input[aria-invalid='true'] {
+  box-shadow: inset 0 0 0 1.5px var(--text-red);
+}
+
+.add {
+  flex: none;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--fill);
+  color: var(--label);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.add:disabled {
+  opacity: 0.45;
+}
+
+.error {
+  color: var(--text-red);
+  font-size: 13px;
+}
+
+.summary {
+  color: var(--label-secondary);
+  font-size: 13px;
+}

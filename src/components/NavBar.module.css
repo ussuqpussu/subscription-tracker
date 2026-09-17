@@ -1,0 +1,80 @@
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+  box-shadow: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+/* Кромка стекла у навбара — только тонкая линия снизу. */
+.backdrop::before {
+  display: none;
+}
+
+.backdrop::after {
+  background: none;
+  box-shadow: inset 0 -0.5px 0 var(--separator);
+}
+
+.bar[data-scrolled='true'] .backdrop {
+  opacity: 1;
+}
+
+.inner {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  max-width: 720px;
+  height: 56px;
+  margin: 0 auto;
+  padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px));
+}
+
+.compactTitle {
+  grid-column: 2;
+  font-size: 17px;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 0.2s ease,
+    transform 0.3s var(--ease-out);
+}
+
+.bar[data-scrolled='true'] .compactTitle {
+  opacity: 1;
+  transform: none;
+}
+
+.trailing {
+  grid-column: 3;
+  justify-self: end;
+}
+
+.largeTitleWrap {
+  max-width: 720px;
+  margin: -4px auto 0;
+  padding: 0 max(20px, env(safe-area-inset-right, 0px)) 12px max(20px, env(safe-area-inset-left, 0px));
+}
+
+.largeTitle {
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.008em;
+}
+
+.sentinel {
+  height: 1px;
+  margin-top: -1px;
+}

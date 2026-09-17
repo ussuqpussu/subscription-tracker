@@ -1,0 +1,312 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: inherit;
+}
+
+.header {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 8px 10px;
+  border-bottom: 0.5px solid var(--separator);
+}
+
+.grabber {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 38px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--fill-strong);
+  transform: translateX(-50%);
+}
+
+.title {
+  font-size: 17px;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.headerButton {
+  justify-self: start;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--accent-text);
+  font-size: 17px;
+  transition: background-color 0.15s ease;
+}
+
+.headerButton:active {
+  background: var(--fill);
+}
+
+.done {
+  justify-self: end;
+  font-weight: 600;
+}
+
+.body {
+  display: grid;
+  gap: 8px;
+  padding: 16px 16px calc(28px + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.section {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.section:first-child {
+  margin-top: 0;
+}
+
+.groupTitle {
+  padding: 0 16px;
+  color: var(--label-secondary);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.group {
+  display: grid;
+  border-radius: var(--radius-group);
+  background: var(--group-fill);
+  box-shadow: inset 0 0 0 0.5px var(--group-stroke);
+  overflow: hidden;
+}
+
+.group > * + * {
+  border-top: 0.5px solid var(--separator);
+}
+
+.group > .error {
+  border-top: 0;
+}
+
+.hint {
+  padding: 0 16px 4px;
+  color: var(--label-secondary);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.field {
+  display: flex;
+}
+
+.nameInput {
+  flex: 1;
+  min-width: 0;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 0;
+  background: transparent;
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+  padding: 6px 16px;
+}
+
+.rowLabel {
+  flex: none;
+  font-size: 17px;
+}
+
+.rowControl {
+  display: flex;
+  flex: 1;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.inlineInput {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--label);
+  font-size: 17px;
+  text-align: right;
+}
+
+.nameInput::placeholder,
+.inlineInput::placeholder,
+.notes::placeholder {
+  color: var(--label-tertiary);
+}
+
+/* Фокус поля — синяя полоса у края строки: обводка вокруг текста налезала бы на ошибку. */
+.nameInput:focus-visible,
+.inlineInput:focus-visible,
+.notes:focus-visible,
+.select:focus-visible {
+  outline: none;
+}
+
+.field:has(:focus-visible),
+.row:has(input:focus-visible, select:focus-visible),
+.group:has(> .notes:focus-visible) {
+  box-shadow: inset 4px 0 0 var(--focus);
+}
+
+.nameInput[aria-invalid='true'],
+.inlineInput[aria-invalid='true'] {
+  color: var(--text-red);
+}
+
+.dateInput {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: auto;
+  min-width: 9.5em;
+  color-scheme: light dark;
+}
+
+.dateInput::-webkit-date-and-time-value {
+  text-align: right;
+}
+
+.selectWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  color: var(--label-secondary);
+}
+
+.select {
+  -webkit-appearance: none;
+  appearance: none;
+  max-width: 100%;
+  min-height: 40px;
+  padding: 0 26px 0 0;
+  border: 0;
+  background: transparent;
+  color: var(--label);
+  font-size: 17px;
+  text-align: right;
+  text-align-last: right;
+}
+
+.selectWrap svg {
+  position: absolute;
+  right: 0;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+
+.currency {
+  width: min(100%, 188px);
+}
+
+.status {
+  width: min(100%, 260px);
+}
+
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 16px 12px;
+}
+
+.suggestions :global(.chip) {
+  min-height: 34px;
+  font-size: 14px;
+}
+
+.notes {
+  width: 100%;
+  min-height: 96px;
+  padding: 14px 16px;
+  border: 0;
+  background: transparent;
+  font-size: 17px;
+  line-height: 1.35;
+  resize: vertical;
+}
+
+.error {
+  padding: 0 16px 12px;
+  color: var(--text-red);
+  font-size: 13px;
+}
+
+.action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+  padding: 8px 16px;
+  border: 0;
+  background: transparent;
+  color: var(--label);
+  font-size: 17px;
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+
+.action:active {
+  background: var(--fill);
+}
+
+.action:focus-visible {
+  outline-offset: -3px;
+}
+
+.action svg {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  color: var(--label-secondary);
+}
+
+.actionText {
+  display: grid;
+  gap: 2px;
+}
+
+.actionHint {
+  color: var(--label-secondary);
+  font-size: 13px;
+}
+
+.destructive,
+.destructive svg {
+  color: var(--text-red);
+}
+
+@media (max-width: 380px) {
+  .row {
+    gap: 8px;
+  }
+
+  .rowLabel {
+    font-size: 16px;
+  }
+}

@@ -1,0 +1,145 @@
+/*
+ * Liquid Glass на CSS.
+ * Слои: полупрозрачная заливка + размытие и насыщенность фона, бликовая кромка (::before),
+ * внутренний свет сверху и затенение снизу (::after).
+ * Настоящая рефракция через SVG-фильтры работает только в Chromium, поэтому здесь её нет:
+ * на iPhone в Safari стекло выглядит одинаково.
+ */
+
+.glass,
+.glass-thick {
+  position: relative;
+  isolation: isolate;
+  background: var(--glass-fill);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-thick {
+  background: var(--glass-fill-thick);
+  -webkit-backdrop-filter: blur(var(--glass-blur-thick)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-thick)) saturate(var(--glass-saturate));
+}
+
+/* Бликовая кромка: ярко сверху слева, мягко по бокам, отражение снизу справа. */
+.glass::before,
+.glass-thick::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    150deg,
+    var(--glass-rim-strong) 0%,
+    var(--glass-rim-soft) 26%,
+    transparent 48%,
+    transparent 62%,
+    var(--glass-rim-soft) 82%,
+    var(--glass-rim-far) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+}
+
+/* Внутренний свет: линза собирает блик у верхнего края. */
+.glass::after,
+.glass-thick::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(130% 80% at 50% -12%, var(--glass-sheen), transparent 58%);
+  box-shadow:
+    inset 0 0 14px 0 var(--glass-inner-glow),
+    inset 0 -1px 1px 0 var(--glass-inner-shade);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass,
+  .glass-thick {
+    background: var(--glass-fallback);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass,
+  .glass-thick {
+    background: var(--glass-fallback);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* Общие примитивы управления */
+
+.chip {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 15px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--fill);
+  color: var(--label);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.18s var(--ease-out);
+}
+
+.chip:active {
+  transform: scale(0.95);
+}
+
+.chip[aria-pressed='true'] {
+  background: var(--label);
+  color: var(--bg-solid);
+}
+
+.icon-button {
+  appearance: none;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--label-secondary);
+  transition:
+    background-color 0.2s ease,
+    transform 0.18s var(--ease-out);
+}
+
+.icon-button:hover {
+  background: var(--fill);
+}
+
+.icon-button:active {
+  transform: scale(0.92);
+  background: var(--fill-strong);
+}
+
+.icon-button svg {
+  width: 22px;
+  height: 22px;
+}
