@@ -145,7 +145,8 @@ async function handleTest(request: Request, env: Env, cors: Record<string, strin
     env,
     parsed.value,
     { p256dh: device.p256dh, auth: device.auth },
-    { title: 'Подписки', body: 'Уведомления работают. Напомним о платежах заранее.', tag: 'test' },
+    // Название приложения iOS показывает сама («from Подписки»): в заголовке его не повторяем.
+    { title: 'Уведомления работают', body: 'Напомним о платежах заранее.', tag: 'test' },
   )
   if (isGone(status)) {
     await env.DB.batch(deleteDevices(env, [parsed.value]))
