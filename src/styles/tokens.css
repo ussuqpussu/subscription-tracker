@@ -32,12 +32,13 @@
   --backdrop-dim: rgba(0, 0, 0, 0.6);
 
   /* Семантические акценты */
-  --accent: #0a84ff;
-  --accent-pressed: #0071e3;
-  --accent-text: #409cff;
-  --accent-tint: rgba(10, 132, 255, 0.16);
-  --on-accent: #ffffff;
-  --focus: #0a84ff;
+  /* Пастельный барвинок: мягче системного синего, тёмный текст на заливке читается с контрастом > 9:1. */
+  --accent: #b4befe;
+  --accent-pressed: #9aa6f5;
+  --accent-text: #b4befe;
+  --accent-tint: rgba(180, 190, 254, 0.14);
+  --on-accent: #11111b;
+  --focus: #b4befe;
   --green: #30d158;
   --red: #ff453a;
 

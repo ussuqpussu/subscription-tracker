@@ -73,6 +73,15 @@ button:disabled {
   outline: none;
 }
 
+/*
+ * Кольцо фокуса — только для клавиатуры. iOS Safari рисует его и после касания,
+ * когда модальное окно само переводит фокус на кнопку. Способ ввода отслеживает main.tsx.
+ */
+html[data-input='pointer'] :focus-visible,
+html[data-input='pointer'] :focus-visible * {
+  outline: none !important;
+}
+
 .visually-hidden {
   position: absolute !important;
   width: 1px;
