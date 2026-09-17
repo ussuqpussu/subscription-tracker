@@ -41,6 +41,9 @@ export default defineConfig({
       },
     }),
   ],
+  // На Windows «localhost» у Node резолвится в ::1, а браузер может идти на 127.0.0.1 и не достучаться.
+  server: { host: '127.0.0.1', port: 5173 },
+  preview: { host: '127.0.0.1', port: 4173 },
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],
