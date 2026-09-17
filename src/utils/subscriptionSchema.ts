@@ -5,7 +5,7 @@ import {
   MAX_REMINDER_DAYS,
   STATUSES,
 } from '../constants'
-import type { BillingPeriod, Currency, Status, Subscription } from '../types'
+import type { BillingPeriod, Currency, Payment, PriceChange, Status, Subscription } from '../types'
 import { isValidISODate } from './dateUtils'
 import { isValidLogo, normalizeUrl } from './logo'
 
@@ -25,6 +25,22 @@ export function isValidReminder(value: unknown): value is number {
 
 export function isValidCustomDays(value: unknown): value is number {
   return typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= MAX_CUSTOM_DAYS
+}
+
+/** Записи истории: дата, сумма и валюта. Испорченные строки отбрасываются. */
+function normalizeMoneyLog<T extends { date: string; currency: Currency }>(
+  value: unknown,
+  amountKey: 'amount' | 'price',
+): T[] {
+  if (!Array.isArray(value)) return []
+  const items: T[] = []
+  for (const entry of value) {
+    if (!isRecord(entry) || !isValidISODate(entry.date) || !isOneOf<Currency>(CURRENCIES, entry.currency)) continue
+    const amount = entry[amountKey]
+    if (typeof amount !== 'number' || !Number.isFinite(amount) || amount < 0) continue
+    items.push({ date: entry.date, currency: entry.currency, [amountKey]: amount } as T)
+  }
+  return items
 }
 
 /** Уникальные напоминания по возрастанию. */
@@ -52,6 +68,9 @@ export function normalizeSubscription(value: unknown): Subscription | null {
     notes,
     url,
     logo,
+    trialUntil,
+    payments,
+    priceHistory,
     reminders,
     paidThrough,
   } = value
@@ -81,6 +100,11 @@ export function normalizeSubscription(value: unknown): Subscription | null {
   const normalizedUrl = typeof url === 'string' ? normalizeUrl(url) : null
   if (normalizedUrl) subscription.url = normalizedUrl
   if (isValidLogo(logo)) subscription.logo = logo
+  if (isValidISODate(trialUntil)) subscription.trialUntil = trialUntil
+  const validPayments = normalizeMoneyLog<Payment>(payments, 'amount')
+  if (validPayments.length > 0) subscription.payments = validPayments
+  const validPrices = normalizeMoneyLog<PriceChange>(priceHistory, 'price')
+  if (validPrices.length > 0) subscription.priceHistory = validPrices
   if (isValidISODate(paidThrough)) subscription.paidThrough = paidThrough
   return subscription
 }

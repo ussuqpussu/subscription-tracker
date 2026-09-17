@@ -1,5 +1,5 @@
 import type { Subscription } from '../types'
-import { markPaid, mergeEdit, withInitialPaidThrough } from '../utils/subscriptionUtils'
+import { keepHistory, markPaid, mergeEdit, withInitialPaidThrough } from '../utils/subscriptionUtils'
 
 export type SubscriptionsAction =
   | { type: 'add'; subscription: Subscription; today: Date }
@@ -33,7 +33,7 @@ export function subscriptionsReducer(
       return [...state, withInitialPaidThrough(action.subscription, action.today)]
     case 'update':
       return updateById(state, action.subscription.id, (previous) =>
-        mergeEdit(previous, action.subscription, action.today),
+        keepHistory(previous, mergeEdit(previous, action.subscription, action.today), action.today),
       )
     case 'delete':
       return state.filter((item) => item.id !== action.id)

@@ -55,6 +55,7 @@ export function SubscriptionRow({
   const price = formatMoney(subscription.price, subscription.currency)
   const period = formatPeriod(subscription).toLowerCase()
   const needsPayment = lamp === 'yellow' || lamp === 'red'
+  const onTrial = subscription.trialUntil !== undefined && getDaysUntil(subscription.trialUntil, today) >= 0
 
   const label = [
     subscription.name,
@@ -189,9 +190,11 @@ export function SubscriptionRow({
               <StatusLamp lamp={lamp} />
               <span className={styles.dueText}>{dueText}</span>
             </span>
-            {(active || subscription.category) && (
+            {(active || onTrial || subscription.category) && (
               <span className={styles.meta}>
-                {[active ? dateText : '', subscription.category].filter(Boolean).join(' · ')}
+                {[active ? dateText : '', onTrial ? 'пробный период' : '', subscription.category]
+                  .filter(Boolean)
+                  .join(' · ')}
               </span>
             )}
           </span>

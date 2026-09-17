@@ -96,6 +96,12 @@
   border-top: 0;
 }
 
+.historyValue {
+  color: var(--label-secondary);
+  font-size: 15px;
+  white-space: nowrap;
+}
+
 .hint {
   padding: 0 16px 4px;
   color: var(--label-secondary);

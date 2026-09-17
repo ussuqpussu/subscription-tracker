@@ -10,8 +10,8 @@ import {
   STATUSES,
 } from '../constants'
 import type { BillingPeriod, Currency, Status, Subscription } from '../types'
-import { getDaysUntil, getDueDate, toISODate } from '../utils/dateUtils'
-import { formatDate, formatDueText } from '../utils/format'
+import { getDaysUntil, getDueDate, parseISODate, toISODate } from '../utils/dateUtils'
+import { formatDate, formatDueText, formatMoney, formatPaymentCount } from '../utils/format'
 import { getDisplayHost, MAX_URL_LENGTH, normalizeUrl } from '../utils/logo'
 import { LogoError, readLogoFile } from '../utils/logoImage'
 import {
@@ -47,6 +47,9 @@ interface SubscriptionFormProps {
   onExport: (subscription: Subscription) => void
   onMarkPaid: (subscription: Subscription) => void
 }
+
+/** Столько строк истории платежей показываем в форме. */
+const MAX_HISTORY_ROWS = 12
 
 const TITLE_ID = 'subscription-form-title'
 
@@ -145,6 +148,26 @@ function FormContent({
   const isEdit = subscription !== null
   const active = subscription?.status === 'active'
   const dueDate = subscription ? getDueDate(subscription) : null
+
+  // История: последние оплаты и прошлые цены, от новых к старым.
+  const payments = [...(subscription?.payments ?? [])].reverse().slice(0, MAX_HISTORY_ROWS)
+  const priceChanges = [...(subscription?.priceHistory ?? [])].reverse()
+  const history = [
+    ...priceChanges.map((change) => ({
+      id: `price:${change.date}:${change.price}`,
+      label: `Цена до ${formatDate(parseISODate(change.date), today)}`,
+      value: formatMoney(change.price, change.currency),
+    })),
+    ...payments.map((payment) => ({
+      id: `paid:${payment.date}:${payment.amount}`,
+      label: `Оплачено ${formatDate(parseISODate(payment.date), today)}`,
+      value: formatMoney(payment.amount, payment.currency),
+    })),
+  ]
+  const paidTotal = (subscription?.payments ?? []).reduce((sum, payment) => sum + payment.amount, 0)
+  const historyHint = subscription?.payments?.length
+    ? `Всего отмечено: ${formatMoney(paidTotal, subscription.currency)} за ${formatPaymentCount(subscription.payments.length)}.`
+    : 'Цена менялась. Отмечайте оплату, чтобы видеть историю платежей.'
 
   return (
     <div className={styles.form}>
@@ -305,6 +328,23 @@ function FormContent({
           </Row>
           {renderError('startDate')}
 
+          <Row label="Пробный до" htmlFor={id('trialUntil')}>
+            <input
+              id={id('trialUntil')}
+              ref={(element) => {
+                fieldRefs.current.trialUntil = element
+              }}
+              type="date"
+              min="1970-01-01"
+              max="2100-12-31"
+              className={`tabular ${styles.inlineInput} ${styles.dateInput}`}
+              value={draft.trialUntil}
+              onChange={(event) => update('trialUntil', event.target.value)}
+              {...errorProps('trialUntil')}
+            />
+          </Row>
+          {renderError('trialUntil')}
+
           <Row label="Повтор" htmlFor={id('billingPeriod')}>
             <span className={styles.selectWrap}>
               <select
@@ -347,7 +387,8 @@ function FormContent({
           )}
         </Group>
         <p className={styles.hint}>
-          Дата первого или последнего списания. Следующие платежи посчитаются сами.
+          Дата первого или последнего списания. Следующие платежи посчитаются сами. «Пробный до» — дата окончания
+          бесплатного периода: напомним накануне, чтобы успеть отменить.
         </p>
 
         <Group title="Детали">
@@ -409,6 +450,20 @@ function FormContent({
             onChange={(event) => update('notes', event.target.value)}
           />
         </Group>
+
+        {history.length > 0 && (
+          <>
+            <Group title="История">
+              {history.map((entry) => (
+                <div key={entry.id} className={styles.row}>
+                  <span className={styles.rowLabel}>{entry.label}</span>
+                  <span className={`tabular ${styles.historyValue}`}>{entry.value}</span>
+                </div>
+              ))}
+            </Group>
+            <p className={styles.hint}>{historyHint}</p>
+          </>
+        )}
 
         {subscription && (
           <Group>

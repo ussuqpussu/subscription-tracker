@@ -1,5 +1,5 @@
 import { SOON_THRESHOLD_DAYS } from '../constants'
-import type { Lamp, Status, Subscription } from '../types'
+import type { Lamp, Payment, PriceChange, Status, Subscription } from '../types'
 import {
   getDaysUntil,
   getDueDate,
@@ -48,9 +48,33 @@ export function mergeEdit(previous: Subscription, edited: Subscription, today: D
   return next
 }
 
-/** Одна отметка = один оплаченный платёж. */
+/** Подписка после правки: история платежей и прошлые цены остаются, смена цены записывается. */
+export function keepHistory(previous: Subscription, edited: Subscription, today: Date): Subscription {
+  const next: Subscription = { ...edited }
+  if (previous.payments?.length) next.payments = previous.payments
+  const priceChanged = previous.price !== edited.price || previous.currency !== edited.currency
+  const history: PriceChange[] = [...(previous.priceHistory ?? [])]
+  if (priceChanged) {
+    history.push({ date: toISODate(today), price: previous.price, currency: previous.currency })
+  }
+  if (history.length > 0) next.priceHistory = history.slice(-MAX_PRICE_CHANGES)
+  return next
+}
+
+/** Столько записей истории храним: дальше localStorage растёт без пользы. */
+export const MAX_PAYMENTS = 120
+export const MAX_PRICE_CHANGES = 20
+
+/** Одна отметка = один оплаченный платёж. Дата и сумма попадают в историю. */
 export function markPaid(subscription: Subscription): Subscription {
-  return { ...subscription, paidThrough: toISODate(getDueDate(subscription)) }
+  const dueDate = getDueDate(subscription)
+  const payment: Payment = {
+    date: toISODate(dueDate),
+    amount: subscription.price,
+    currency: subscription.currency,
+  }
+  const payments = [...(subscription.payments ?? []), payment].slice(-MAX_PAYMENTS)
+  return { ...subscription, paidThrough: payment.date, payments }
 }
 
 export function isActive(subscription: Subscription): boolean {

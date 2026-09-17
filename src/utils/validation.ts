@@ -19,15 +19,17 @@ export interface SubscriptionDraft {
   url: string
   /** Свой логотип (data URL) или null. */
   logo: string | null
+  /** Дата окончания пробного периода или пустая строка. */
+  trialUntil: string
   reminders: number[]
 }
 
-export type DraftField = 'name' | 'url' | 'price' | 'startDate' | 'customDays'
+export type DraftField = 'name' | 'url' | 'price' | 'startDate' | 'trialUntil' | 'customDays'
 
 export type DraftErrors = Partial<Record<DraftField, string>>
 
 /** Порядок полей в форме: фокус уходит на первое поле с ошибкой. */
-export const DRAFT_FIELD_ORDER: readonly DraftField[] = ['name', 'url', 'price', 'startDate', 'customDays']
+export const DRAFT_FIELD_ORDER: readonly DraftField[] = ['name', 'url', 'price', 'startDate', 'trialUntil', 'customDays']
 
 export const MAX_NAME_LENGTH = 80
 export const MAX_CATEGORY_LENGTH = 40
@@ -46,6 +48,7 @@ export function createEmptyDraft(today: string): SubscriptionDraft {
     notes: '',
     url: '',
     logo: null,
+    trialUntil: '',
     reminders: [1, 3],
   }
 }
@@ -63,6 +66,7 @@ export function draftFromSubscription(subscription: Subscription): SubscriptionD
     notes: subscription.notes ?? '',
     url: subscription.url ?? '',
     logo: subscription.logo ?? null,
+    trialUntil: subscription.trialUntil ?? '',
     reminders: [...subscription.reminders],
   }
 }
@@ -93,6 +97,10 @@ export function validateDraft(draft: SubscriptionDraft): DraftValidation {
   if (draft.price.trim() === '') errors.price = 'Введите сумму платежа.'
   else if (!Number.isFinite(price)) errors.price = 'Сумма — число, до двух знаков после запятой.'
 
+  if (draft.trialUntil !== '' && !isValidISODate(draft.trialUntil)) {
+    errors.trialUntil = 'Дата должна быть между 1970 и 2100 годом.'
+  }
+
   if (!draft.startDate) errors.startDate = 'Укажите дату платежа.'
   else if (!isValidISODate(draft.startDate)) errors.startDate = 'Дата должна быть между 1970 и 2100 годом.'
 
@@ -116,6 +124,7 @@ export function validateDraft(draft: SubscriptionDraft): DraftValidation {
   const notes = draft.notes.trim().slice(0, MAX_NOTES_LENGTH)
   if (notes) value.notes = notes
   if (url) value.url = url
+  if (draft.trialUntil) value.trialUntil = draft.trialUntil
   if (draft.logo) value.logo = draft.logo
   return { ok: true, value }
 }

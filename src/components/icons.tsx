@@ -210,3 +210,11 @@ export function SearchIcon(props: IconProps) {
     </Icon>
   )
 }
+
+export function ChartIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4.5 19.5h15M7.5 19.5v-6M12 19.5V6M16.5 19.5v-9" />
+    </Icon>
+  )
+}

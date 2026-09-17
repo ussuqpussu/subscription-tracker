@@ -3,6 +3,7 @@ import {
   addDays,
   compareDates,
   getDueDate,
+  parseISODate,
   getPaymentDate,
   getPaymentIndexOnOrAfter,
   startOfDay,
@@ -42,7 +43,24 @@ export function buildPushReminders(
   const reminders: PushReminder[] = []
 
   for (const subscription of subscriptions) {
-    if (!isActive(subscription) || subscription.reminders.length === 0) continue
+    if (!isActive(subscription)) continue
+
+    // Конец пробного периода: напоминаем накануне, чтобы успеть отменить.
+    if (subscription.trialUntil) {
+      const trialEnd = parseISODate(subscription.trialUntil)
+      const day = addDays(trialEnd, -1)
+      const at = new Date(day.getFullYear(), day.getMonth(), day.getDate(), PUSH_REMINDER_HOUR).getTime()
+      if (at > now.getTime() && compareDates(trialEnd, horizon) <= 0) {
+        reminders.push({
+          at,
+          title: `${subscription.name}: пробный период заканчивается завтра`,
+          body: `Дальше спишется ${formatMoney(subscription.price, subscription.currency)} · ${formatDate(trialEnd, day)}`,
+          tag: `${subscription.id}:trial:${subscription.trialUntil}`,
+        })
+      }
+    }
+
+    if (subscription.reminders.length === 0) continue
 
     // Для просроченного платежа напоминать поздно: начинаем с неоплаченного, но не раньше сегодняшнего.
     const due = getDueDate(subscription)

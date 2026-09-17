@@ -61,6 +61,12 @@ export interface RubTotal {
   missing: Exclude<Currency, 'RUB'>[]
 }
 
+/** Сумма в рублях. null — валюта не рублёвая, а курса ещё нет. */
+export function convertToRub(amount: number, currency: Currency, rates: Rates | null): number | null {
+  if (currency === 'RUB') return amount
+  return rates ? amount * rates.rub[currency] : null
+}
+
 export function getMonthlyTotalRub(subscriptions: readonly Subscription[], rates: Rates | null): RubTotal {
   let amount = 0
   let converted = false

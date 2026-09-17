@@ -59,6 +59,11 @@ export function pluralize(count: number, [one, few, many]: readonly [string, str
   return many
 }
 
+/** «3 платежа», «5 платежей». */
+export function formatPaymentCount(count: number): string {
+  return `${count} ${pluralize(count, ['платёж', 'платежа', 'платежей'])}`
+}
+
 export function formatSubscriptionCount(count: number): string {
   return `${count} ${pluralize(count, ['подписка', 'подписки', 'подписок'])}`
 }

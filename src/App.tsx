@@ -4,12 +4,13 @@ import { BottomBar } from './components/BottomBar'
 import { ConfirmSheet, type ConfirmRequest } from './components/ConfirmSheet'
 import { EmptyState } from './components/EmptyState'
 import { Filters } from './components/Filters'
-import { ArrowDownDocIcon, ArrowUpDocIcon, CalendarPlusIcon, TrashIcon } from './components/icons'
+import { ArrowDownDocIcon, ArrowUpDocIcon, CalendarPlusIcon, ChartIcon, TrashIcon } from './components/icons'
 import type { MenuItem } from './components/MoreMenu'
 import { NavBar } from './components/NavBar'
 import { NextPayment } from './components/NextPayment'
 import { NotificationsSheet, type PushMessage } from './components/NotificationsSheet'
 import { SearchField } from './components/SearchField'
+import { StatsSheet } from './components/StatsSheet'
 import { SubscriptionForm, type SubscriptionValue } from './components/SubscriptionForm'
 import { SubscriptionList } from './components/SubscriptionList'
 import { SummaryBar } from './components/SummaryBar'
@@ -76,6 +77,7 @@ export default function App() {
   const [confirm, setConfirm] = useState<ConfirmRequest | null>(null)
   const [toast, setToast] = useState<ToastMessage | null>(null)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const [statsOpen, setStatsOpen] = useState(false)
   const [pushState, setPushState] = useState<PushState>(isPushConfigured ? 'off' : 'unconfigured')
   const [pushBusy, setPushBusy] = useState(false)
   const [pushMessage, setPushMessage] = useState<PushMessage | null>(null)
@@ -296,6 +298,13 @@ export default function App() {
 
   const menuItems: MenuItem[] = [
     {
+      id: 'stats',
+      label: 'Статистика',
+      icon: <ChartIcon />,
+      disabled: subscriptions.length === 0,
+      onSelect: () => setStatsOpen(true),
+    },
+    {
       id: 'export-all',
       label: 'Все в календарь',
       icon: <CalendarPlusIcon />,
@@ -399,6 +408,13 @@ export default function App() {
         onTestPush={handleTestPush}
         onExportAll={handleExportAll}
         exportDisabled={subscriptions.length === 0}
+      />
+      <StatsSheet
+        open={statsOpen}
+        onClose={() => setStatsOpen(false)}
+        subscriptions={subscriptions}
+        today={today}
+        rates={rates}
       />
       <ConfirmSheet request={confirm} onClose={() => setConfirm(null)} />
       <Toast toast={toast} onDismiss={dismissToast} />

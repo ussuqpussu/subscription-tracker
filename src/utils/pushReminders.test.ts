@@ -62,6 +62,17 @@ describe('расписание пушей', () => {
     expect(reminders[0].at).toBe(at(9, 28))
   })
 
+  it('напоминание накануне конца пробного периода', () => {
+    const [reminder] = buildPushReminders(
+      [sub({ id: 't', name: 'Okko', price: 399, trialUntil: '2026-09-25', reminders: [] })],
+      now,
+    )
+    expect(reminder.at).toBe(at(9, 24))
+    expect(reminder.title).toBe('Okko: пробный период заканчивается завтра')
+    expect(reminder.body.replace(/[  ]/g, ' ')).toBe('Дальше спишется 399 ₽ · 25 сентября')
+    expect(reminder.tag).toBe('t:trial:2026-09-25')
+  })
+
   it('не больше лимита, самые ранние первыми', () => {
     const daily = sub({ id: 'd', billingPeriod: 'custom', customDays: 1, startDate: '2026-09-18', reminders: [1, 2, 3] })
     const reminders = buildPushReminders([daily], now)
