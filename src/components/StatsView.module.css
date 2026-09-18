@@ -48,6 +48,79 @@
   line-height: 1.4;
 }
 
+/* Годовой прогноз: сумма выбранного месяца над графиком, под ней — тонкие столбики. */
+.forecastHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: -4px;
+}
+
+.forecastMonth {
+  color: var(--label-secondary);
+  font-size: 15px;
+  text-transform: capitalize;
+}
+
+.forecastValue {
+  font-family: var(--font-rounded);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.bars {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  align-items: end;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.barItem {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+
+.bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  height: 96px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-small);
+  background: transparent;
+  transition: background-color 0.2s ease;
+}
+
+.bar[data-selected='true'] {
+  background: var(--fill);
+}
+
+.barFill {
+  width: 8px;
+  min-height: 2px;
+  border-radius: 999px;
+  background: var(--label-tertiary);
+  transition: height 0.32s var(--ease-out);
+}
+
+.bar[data-current='true'] .barFill {
+  background: var(--accent);
+}
+
+.barLabel {
+  color: var(--label-secondary);
+  font-size: 10px;
+  line-height: 1;
+}
+
 .chart {
   position: relative;
   justify-self: center;

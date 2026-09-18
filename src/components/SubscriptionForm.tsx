@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
+import { useEffect, useId, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
 import {
   BILLING_PERIOD_LABELS,
   BILLING_PERIODS,
@@ -8,8 +8,10 @@ import {
   SERVICE_PRESETS,
   STATUS_LABELS,
   STATUSES,
+  type ServicePreset,
 } from '../constants'
 import type { BillingPeriod, Currency, Status, Subscription } from '../types'
+import { loadCatalog } from '../utils/catalog'
 import { getDaysUntil, getDueDate, parseISODate, toISODate } from '../utils/dateUtils'
 import { formatDate, formatDueText, formatMoney, formatPaymentCount } from '../utils/format'
 import { getDisplayHost, MAX_URL_LENGTH, normalizeUrl } from '../utils/logo'
@@ -29,6 +31,7 @@ import {
 import { ArrowUpRightIcon, CalendarPlusIcon, CheckIcon, ChevronDownIcon, TrashIcon, XIcon } from './icons'
 import { Logo } from './Logo'
 import { ReminderPicker } from './ReminderPicker'
+import { SearchField } from './SearchField'
 import { SegmentedControl, type SegmentOption } from './SegmentedControl'
 import { Sheet } from './Sheet'
 import styles from './SubscriptionForm.module.css'
@@ -50,6 +53,8 @@ interface SubscriptionFormProps {
 
 /** Столько строк истории платежей показываем в форме. */
 const MAX_HISTORY_ROWS = 12
+/** Столько готовых сервисов показываем разом: каждый грузит свой логотип. */
+const MAX_PRESETS = 24
 
 const TITLE_ID = 'subscription-form-title'
 
@@ -87,6 +92,9 @@ function FormContent({
   )
   const [errors, setErrors] = useState<DraftErrors>({})
   const [logoError, setLogoError] = useState<string | null>(null)
+  // Каталог сервисов: сначала встроенный, затем — полный с сервера, если он доступен.
+  const [catalog, setCatalog] = useState<readonly ServicePreset[]>(SERVICE_PRESETS)
+  const [presetQuery, setPresetQuery] = useState('')
   // Значок сайта грузится не на каждую букву, а когда ввод ссылки затих.
   const [previewUrl, setPreviewUrl] = useState(() => normalizeUrl(draft.url))
   const fieldRefs = useRef<Partial<Record<DraftField, HTMLInputElement | null>>>({})
@@ -108,6 +116,22 @@ function FormContent({
     const timer = window.setTimeout(() => setPreviewUrl(normalizeUrl(draft.url)), 600)
     return () => window.clearTimeout(timer)
   }, [draft.url])
+
+  // Каталог нужен только при создании подписки; офлайн остаётся встроенный список.
+  useEffect(() => {
+    if (subscription) return
+    const controller = new AbortController()
+    loadCatalog(controller.signal)
+      .then(setCatalog)
+      .catch(() => undefined)
+    return () => controller.abort()
+  }, [subscription])
+
+  const presets = useMemo(() => {
+    const query = presetQuery.trim().toLocaleLowerCase('ru')
+    const found = query === '' ? catalog : catalog.filter((item) => item.name.toLocaleLowerCase('ru').includes(query))
+    return found.slice(0, MAX_PRESETS)
+  }, [catalog, presetQuery])
 
   const handleLogoFile = (event: ChangeEvent<HTMLInputElement>) => {
     const input = event.currentTarget
@@ -255,29 +279,39 @@ function FormContent({
             <h3 id={id('presets')} className={styles.groupTitle}>
               Популярные сервисы
             </h3>
-            <div className={styles.presets}>
-              {SERVICE_PRESETS.map((preset) => (
-                <button
-                  key={preset.name}
-                  type="button"
-                  className={styles.preset}
-                  onClick={() => {
-                    setDraft((current) => ({
-                      ...current,
-                      name: preset.name,
-                      url: preset.url,
-                      category: preset.category,
-                      logo: null,
-                    }))
-                    setPreviewUrl(preset.url)
-                    setErrors({})
-                  }}
-                >
-                  <Logo subscription={{ name: preset.name, url: preset.url }} className={styles.presetLogo} />
-                  <span className={styles.presetName}>{preset.name}</span>
-                </button>
-              ))}
-            </div>
+            <SearchField
+              value={presetQuery}
+              onChange={setPresetQuery}
+              label="Поиск по готовым сервисам"
+              placeholder="Найти сервис"
+            />
+            {presets.length === 0 ? (
+              <p className={styles.hint}>Ничего не нашлось. Введите название вручную — логотип подставится с сайта.</p>
+            ) : (
+              <div className={styles.presets}>
+                {presets.map((preset) => (
+                  <button
+                    key={preset.name}
+                    type="button"
+                    className={styles.preset}
+                    onClick={() => {
+                      setDraft((current) => ({
+                        ...current,
+                        name: preset.name,
+                        url: preset.url,
+                        category: preset.category,
+                        logo: null,
+                      }))
+                      setPreviewUrl(preset.url)
+                      setErrors({})
+                    }}
+                  >
+                    <Logo subscription={{ name: preset.name, url: preset.url }} className={styles.presetLogo} />
+                    <span className={styles.presetName}>{preset.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </section>
         )}
 

@@ -5,6 +5,7 @@
  * здесь хранятся лишь тексты ближайших напоминаний.
  */
 import { buildPushPayload, type PushSubscription } from '@block65/webcrypto-web-push'
+import { SERVICE_CATALOG } from './catalog'
 import {
   iconsFromLinks,
   iconsFromManifest,
@@ -225,6 +226,18 @@ async function handleVaultDelete(request: Request, env: Env, cors: Record<string
   return json(200, {}, cors)
 }
 
+/** Каталог меняется редко: сутки кэша и на устройстве, и в CDN. */
+const CATALOG_TTL_SECONDS = 24 * 60 * 60
+
+/** GET /api/catalog — готовые сервисы для формы подписки. */
+function handleCatalog(cors: Record<string, string>): Response {
+  return json(
+    200,
+    { services: SERVICE_CATALOG },
+    { ...cors, 'Cache-Control': `public, max-age=${CATALOG_TTL_SECONDS}` },
+  )
+}
+
 const LOGO_TTL_SECONDS = 7 * 24 * 60 * 60
 const LOGO_MISS_TTL_SECONDS = 60 * 60
 const LOGO_FETCH_TIMEOUT_MS = 5000
@@ -403,6 +416,7 @@ export default {
 
     const { pathname } = new URL(request.url)
     try {
+      if (pathname === '/api/catalog' && request.method === 'GET') return handleCatalog(cors)
       if (pathname === '/api/subscribe' && request.method === 'POST') return await handleSubscribe(request, env, cors)
       if (pathname === '/api/subscribe' && request.method === 'DELETE') return await handleUnsubscribe(request, env, cors)
       if (pathname === '/api/test' && request.method === 'POST') return await handleTest(request, env, cors)

@@ -1,11 +1,17 @@
-import { PUSH_REMINDER_HOUR } from '../utils/pushReminders'
+import { useId } from 'react'
 import type { PushState } from '../utils/push'
-import { BellIcon, CalendarPlusIcon } from './icons'
+import type { ReminderSettings } from '../utils/pushReminders'
+import { BellIcon, CalendarPlusIcon, ChevronDownIcon } from './icons'
 import styles from './NotificationsSheet.module.css'
 import { Sheet } from './Sheet'
 import { Switch } from './Switch'
 
 const TITLE_ID = 'notifications-title'
+
+/** Часы на выбор: «0:00» … «23:00». */
+const HOURS = Array.from({ length: 24 }, (_, hour) => hour)
+
+const formatHour = (hour: number) => `${hour}:00`
 
 const STATE_TEXT: Record<Exclude<PushState, 'unconfigured'>, string> = {
   on: 'Включены на этом устройстве.',
@@ -28,6 +34,8 @@ interface NotificationsSheetProps {
   busy: boolean
   /** Итог последнего действия. Показывается внутри окна: toast под модальным окном не виден. */
   message: PushMessage | null
+  settings: ReminderSettings
+  onSettingsChange: (settings: ReminderSettings) => void
   onPushToggle: (enabled: boolean) => void
   onTestPush: () => void
   onExportAll: () => void
@@ -40,12 +48,21 @@ export function NotificationsSheet({
   pushState,
   busy,
   message,
+  settings,
+  onSettingsChange,
   onPushToggle,
   onTestPush,
   onExportAll,
   exportDisabled,
 }: NotificationsSheetProps) {
   const canToggle = pushState === 'on' || pushState === 'off'
+  const uid = useId()
+  const id = (field: string) => `${uid}-${field}`
+  const update = (patch: Partial<ReminderSettings>) => onSettingsChange({ ...settings, ...patch })
+
+  const quietHint = settings.quietEnabled
+    ? `Напоминания приходят в ${formatHour(settings.hour)}. Попавшие в тишину подождут до ${formatHour(settings.quietEnd)}.`
+    : `Напоминания приходят в ${formatHour(settings.hour)} по времени устройства.`
 
   return (
     <Sheet open={open} onClose={onClose} labelledBy={TITLE_ID}>
@@ -91,9 +108,91 @@ export function NotificationsSheet({
                 )}
               </div>
               <p className={styles.hint}>
-                Приходят в {PUSH_REMINDER_HOUR}:00 за столько дней до платежа, сколько выбрано в подписке. Для этого
-                название, сумма и дата платежа хранятся на сервере уведомлений.
+                Приходят за столько дней до платежа, сколько выбрано в подписке. Для этого название, сумма и дата
+                платежа хранятся на сервере уведомлений.
               </p>
+            </section>
+          )}
+
+          {pushState !== 'unconfigured' && (
+            <section className={styles.section}>
+              <div className={styles.group}>
+                <div className={styles.row}>
+                  <label htmlFor={id('hour')} className={styles.rowLabel}>
+                    Время напоминаний
+                  </label>
+                  <span className="select-field">
+                    <select
+                      id={id('hour')}
+                      value={settings.hour}
+                      onChange={(event) => update({ hour: Number(event.target.value) })}
+                    >
+                      {HOURS.map((hour) => (
+                        <option key={hour} value={hour}>
+                          {formatHour(hour)}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDownIcon />
+                  </span>
+                </div>
+
+                <div className={styles.row}>
+                  <span id={id('quiet')} className={styles.rowLabel}>
+                    Не беспокоить ночью
+                  </span>
+                  <Switch
+                    checked={settings.quietEnabled}
+                    labelledBy={id('quiet')}
+                    onChange={(checked) => update({ quietEnabled: checked })}
+                  />
+                </div>
+
+                {settings.quietEnabled && (
+                  <>
+                    <div className={styles.row}>
+                      <label htmlFor={id('quietStart')} className={styles.rowLabel}>
+                        Тишина с
+                      </label>
+                      <span className="select-field">
+                        <select
+                          id={id('quietStart')}
+                          value={settings.quietStart}
+                          onChange={(event) => update({ quietStart: Number(event.target.value) })}
+                        >
+                          {HOURS.map((hour) => (
+                            <option key={hour} value={hour}>
+                              {formatHour(hour)}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDownIcon />
+                      </span>
+                    </div>
+
+                    <div className={styles.row}>
+                      <label htmlFor={id('quietEnd')} className={styles.rowLabel}>
+                        Тишина до
+                      </label>
+                      <span className="select-field">
+                        <select
+                          id={id('quietEnd')}
+                          value={settings.quietEnd}
+                          onChange={(event) => update({ quietEnd: Number(event.target.value) })}
+                        >
+                          {HOURS.map((hour) => (
+                            <option key={hour} value={hour}>
+                              {formatHour(hour)}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDownIcon />
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+              <p className={styles.hint}>{quietHint}</p>
             </section>
           )}
 

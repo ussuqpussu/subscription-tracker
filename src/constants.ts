@@ -14,6 +14,9 @@ export const LAST_BACKUP_KEY = 'subscription-tracker:last-backup'
 /** Последние курсы ЦБ для сводки трат в рублях. */
 export const RATES_KEY = 'subscription-tracker:rates'
 
+/** Время пуш-напоминаний и тихие часы. */
+export const REMINDER_SETTINGS_KEY = 'subscription-tracker:reminder-settings'
+
 export const CURRENCIES: readonly Currency[] = ['RUB', 'USD', 'EUR', 'KZT']
 
 export const CURRENCY_SYMBOLS: Record<Currency, string> = {
@@ -59,7 +62,10 @@ export const MAX_CUSTOM_DAYS = 3650
 export const MIN_YEAR = 1970
 export const MAX_YEAR = 2100
 
-/** Готовые сервисы для быстрого добавления: подставляют название, сайт и категорию. */
+/**
+ * Готовые сервисы для быстрого добавления: подставляют название, сайт и категорию.
+ * Это встроенный короткий список — он работает офлайн; полный каталог приходит с сервера.
+ */
 export interface ServicePreset {
   name: string
   /** Адрес, с которого берётся логотип. Выбран тот, где есть чёткая иконка. */
@@ -88,4 +94,16 @@ export const SERVICE_PRESETS: readonly ServicePreset[] = [
   { name: 'GitHub', url: 'https://github.com/', category: 'Работа' },
   { name: 'Duolingo', url: 'https://www.duolingo.com/', category: 'Учёба' },
   { name: 'PlayStation Plus', url: 'https://www.playstation.com/', category: 'Игры' },
+  { name: 'МТС Premium', url: 'https://mts.ru/', category: 'Развлечения' },
+  { name: 'Premier', url: 'https://premier.one/', category: 'Кино' },
+  { name: 'Start', url: 'https://start.ru/', category: 'Кино' },
+  { name: 'KION', url: 'https://kion.ru/', category: 'Кино' },
+  { name: 'Apple Music', url: 'https://music.apple.com/', category: 'Музыка' },
+  { name: 'Яндекс 360', url: 'https://360.yandex.ru/', category: 'Облако' },
+  { name: 'Xbox Game Pass', url: 'https://www.xbox.com/', category: 'Игры' },
+  { name: 'Skyeng', url: 'https://skyeng.ru/', category: 'Учёба' },
+  { name: 'Figma', url: 'https://www.figma.com/', category: 'Работа' },
+  { name: 'Microsoft 365', url: 'https://www.microsoft.com/microsoft-365', category: 'Работа' },
+  { name: 'Adobe Creative Cloud', url: 'https://www.adobe.com/', category: 'Работа' },
+  { name: 'Discord Nitro', url: 'https://discord.com/', category: 'Связь' },
 ]

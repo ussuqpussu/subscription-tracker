@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import type { Subscription } from '../types'
-import { addMonths, getMonthEvents, getMonthGrid, getMonthTotal, startOfMonth } from './calendar'
+import {
+  addMonths,
+  FORECAST_MONTHS,
+  getForecast,
+  getMonthEvents,
+  getMonthGrid,
+  getMonthTotal,
+  startOfMonth,
+} from './calendar'
 import { parseISODate, toISODate } from './dateUtils'
 import type { Rates } from './rates'
 
@@ -67,6 +75,51 @@ describe('итог месяца', () => {
     )
     expect(getMonthTotal(events, rates)).toEqual({ amount: 699, payments: 2 })
     expect(getMonthTotal(events, null)).toEqual({ amount: 299, payments: 2 })
+  })
+})
+
+describe('прогноз на год', () => {
+  const months = (items: Subscription[], currentRates: Rates | null = rates) =>
+    getForecast(items, september, currentRates).map((item) => [toISODate(item.month), item.amount, item.payments])
+
+  it('двенадцать месяцев подряд, начиная с текущего', () => {
+    const forecast = getForecast([sub({ id: 'm' })], september, rates)
+    expect(forecast).toHaveLength(FORECAST_MONTHS)
+    expect(toISODate(forecast[0].month)).toBe('2026-09-01')
+    expect(toISODate(forecast[11].month)).toBe('2027-08-01')
+  })
+
+  it('месячная подписка попадает в каждый месяц', () => {
+    expect(months([sub({ id: 'm', price: 299 })]).every(([, amount, payments]) => amount === 299 && payments === 1)).toBe(
+      true,
+    )
+  })
+
+  it('годовая — только в свой месяц', () => {
+    const yearly = sub({ id: 'y', billingPeriod: 'yearly', startDate: '2026-12-05', price: 1990 })
+    expect(months([yearly]).filter(([, amount]) => amount !== 0)).toEqual([['2026-12-01', 1990, 1]])
+  })
+
+  it('недельная — по числу недель в месяце', () => {
+    const weekly = sub({ id: 'w', billingPeriod: 'weekly', startDate: '2026-09-03', price: 100 })
+    expect(months([weekly]).slice(0, 2)).toEqual([
+      ['2026-09-01', 400, 4],
+      ['2026-10-01', 500, 5],
+    ])
+  })
+
+  it('неактивные подписки не считаются', () => {
+    expect(
+      months([sub({ id: 'p', status: 'paused' }), sub({ id: 'c', status: 'cancelled' })]).every(
+        ([, amount, payments]) => amount === 0 && payments === 0,
+      ),
+    ).toBe(true)
+  })
+
+  it('валюта пересчитывается в рубли по курсу, без курса — только рублёвые', () => {
+    const items = [sub({ id: 'r', price: 299 }), sub({ id: 'u', price: 5, currency: 'USD' })]
+    expect(months(items)[0]).toEqual(['2026-09-01', 699, 2])
+    expect(months(items, null)[0]).toEqual(['2026-09-01', 299, 2])
   })
 })
 

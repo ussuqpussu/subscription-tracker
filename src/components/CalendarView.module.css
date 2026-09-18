@@ -3,16 +3,26 @@
   gap: 16px;
 }
 
-/* Шапка месяца — стеклянная капсула, липнет под верхней панелью. */
+/* Шапка — стеклянная капсула, липнет под верхней панелью: переключатель вида, под ним месяц. */
 .header {
   position: sticky;
   top: calc(64px + env(safe-area-inset-top, 0px));
   z-index: 10;
   display: grid;
+  gap: 4px;
+  border-radius: 24px;
+  padding: 4px;
+}
+
+/* В списке остаётся один ряд — капсуле идёт круглая форма. */
+.header[data-mode='list'] {
+  border-radius: 999px;
+}
+
+.monthRow {
+  display: grid;
   grid-template-columns: 44px minmax(0, 1fr) 44px;
   align-items: center;
-  border-radius: 999px;
-  padding: 4px;
 }
 
 .month {
@@ -163,6 +173,21 @@
 .dayList {
   display: grid;
   gap: 12px;
+}
+
+/* Список ближайших событий: по группе на каждый день. */
+.list {
+  display: grid;
+  gap: 16px;
+}
+
+.listGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.listGroup .dayTitle {
+  padding: 0 4px;
 }
 
 .dayHeader {

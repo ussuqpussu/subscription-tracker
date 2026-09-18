@@ -102,6 +102,31 @@ export function getMonthTotal(events: MonthEvents, rates: Rates | null): MonthTo
   return { amount, payments }
 }
 
+/** Столько месяцев показывает годовой прогноз, считая текущий. */
+export const FORECAST_MONTHS = 12
+
+export interface MonthForecast extends MonthTotal {
+  /** Первое число месяца. */
+  month: Date
+}
+
+/**
+ * Прогноз списаний помесячно, начиная с месяца даты `from`: сколько спишется и сколько будет платежей.
+ * Считается по текущим ценам и расписанию активных подписок, суммы — в рублях.
+ */
+export function getForecast(
+  subscriptions: readonly Subscription[],
+  from: Date,
+  rates: Rates | null,
+  months = FORECAST_MONTHS,
+): MonthForecast[] {
+  const first = startOfMonth(from)
+  return Array.from({ length: months }, (_, index) => {
+    const month = addMonths(first, index)
+    return { month, ...getMonthTotal(getMonthEvents(subscriptions, month), rates) }
+  })
+}
+
 /** Шесть недель сетки: дни с понедельника, включая хвосты соседних месяцев. */
 export function getMonthGrid(month: Date): Date[] {
   const first = startOfMonth(month)

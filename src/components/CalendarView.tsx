@@ -1,13 +1,14 @@
 import { useMemo, useRef, useState, type PointerEvent } from 'react'
 import type { Subscription } from '../types'
 import { addMonths, getMonthEvents, getMonthGrid, getMonthTotal, startOfMonth, type CalendarEvent } from '../utils/calendar'
-import { compareDates, getDueDate, toISODate } from '../utils/dateUtils'
+import { addDays, compareDates, getDueDate, parseISODate, toISODate } from '../utils/dateUtils'
 import { formatDate, formatMoney, formatMonthYear, pluralize } from '../utils/format'
 import type { Rates } from '../utils/rates'
 import { getLamp } from '../utils/subscriptionUtils'
 import styles from './CalendarView.module.css'
 import { CheckIcon, ChevronLeftIcon, ChevronRightIcon } from './icons'
 import { Logo } from './Logo'
+import { SegmentedControl, type SegmentOption } from './SegmentedControl'
 import { StatusLamp } from './StatusLamp'
 
 const WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
@@ -15,6 +16,16 @@ const WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 const MAX_DOTS = 3
 /** Палец сдвинулся дальше — листаем месяц. */
 const SWIPE_DISTANCE = 60
+/** На сколько дней вперёд смотрит режим «Список». */
+const LIST_DAYS = 60
+
+/** Месяц — сетка с днями, список — ближайшие события подряд. */
+type CalendarMode = 'month' | 'list'
+
+const MODE_OPTIONS: readonly SegmentOption<CalendarMode>[] = [
+  { value: 'month', label: 'Месяц' },
+  { value: 'list', label: 'Список' },
+]
 
 interface CalendarViewProps {
   subscriptions: readonly Subscription[]
@@ -27,13 +38,33 @@ interface CalendarViewProps {
 
 /** Календарь списаний: месяц в сетке, под ним события выбранного дня. */
 export function CalendarView({ subscriptions, today, rates, hidden, onOpen, onMarkPaid }: CalendarViewProps) {
+  const [mode, setMode] = useState<CalendarMode>('month')
   const [month, setMonth] = useState(() => startOfMonth(today))
   const [selected, setSelected] = useState(() => today)
   const swipeRef = useRef<{ pointerId: number; startX: number; startY: number } | null>(null)
 
   const events = useMemo(() => getMonthEvents(subscriptions, month), [subscriptions, month])
   const grid = useMemo(() => getMonthGrid(month), [month])
-  const total = getMonthTotal(events, rates)
+
+  // Список: события ближайших 60 дней по дням. Месяцы берутся те же, что и в сетке.
+  const listDays = useMemo(() => {
+    if (mode !== 'list') return []
+    const from = toISODate(today)
+    const lastDay = addDays(today, LIST_DAYS)
+    const to = toISODate(lastDay)
+    const days: [string, CalendarEvent[]][] = []
+    for (let cursor = startOfMonth(today); compareDates(cursor, lastDay) <= 0; cursor = addMonths(cursor, 1)) {
+      for (const [date, dayEvents] of getMonthEvents(subscriptions, cursor)) {
+        if (date >= from && date <= to) days.push([date, dayEvents])
+      }
+    }
+    return days.sort(([a], [b]) => a.localeCompare(b))
+  }, [mode, subscriptions, today])
+
+  const total = useMemo(
+    () => getMonthTotal(mode === 'list' ? new Map(listDays) : events, rates),
+    [mode, listDays, events, rates],
+  )
   const selectedEvents = events.get(toISODate(selected)) ?? []
   const isCurrentMonth = month.getFullYear() === today.getFullYear() && month.getMonth() === today.getMonth()
 
@@ -65,103 +96,155 @@ export function CalendarView({ subscriptions, today, rates, hidden, onOpen, onMa
 
   return (
     <section className={styles.calendar} aria-label="Календарь списаний">
-      <header className={`glass ${styles.header}`}>
-        <button type="button" className={styles.arrow} aria-label="Предыдущий месяц" onClick={() => goToMonth(-1)}>
-          <ChevronLeftIcon />
-        </button>
-        <h2 className={styles.month}>{formatMonthYear(month)}</h2>
-        <button type="button" className={styles.arrow} aria-label="Следующий месяц" onClick={() => goToMonth(1)}>
-          <ChevronRightIcon />
-        </button>
+      <header className={`glass ${styles.header}`} data-mode={mode}>
+        <SegmentedControl
+          ariaLabel="Вид календаря"
+          size="compact"
+          options={MODE_OPTIONS}
+          value={mode}
+          onChange={setMode}
+        />
+        {mode === 'month' && (
+          <div className={styles.monthRow}>
+            <button type="button" className={styles.arrow} aria-label="Предыдущий месяц" onClick={() => goToMonth(-1)}>
+              <ChevronLeftIcon />
+            </button>
+            <h2 className={styles.month}>{formatMonthYear(month)}</h2>
+            <button type="button" className={styles.arrow} aria-label="Следующий месяц" onClick={() => goToMonth(1)}>
+              <ChevronRightIcon />
+            </button>
+          </div>
+        )}
       </header>
 
-      <div
-        className={styles.sheet}
-        onPointerDown={handlePointerDown}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={() => (swipeRef.current = null)}
-      >
-        <div className={styles.weekdays} aria-hidden="true">
-          {WEEKDAYS.map((day) => (
-            <span key={day}>{day}</span>
-          ))}
-        </div>
+      {mode === 'list' ? (
+        <>
+          <p className={styles.total}>
+            {total.payments > 0 ? (
+              <>
+                {total.payments} {pluralize(total.payments, ['платёж', 'платежа', 'платежей'])} ·{' '}
+                <span className="tabular">{hidden ? '•••• ₽' : formatMoney(total.amount, 'RUB')}</span> за 60 дней
+              </>
+            ) : (
+              'В ближайшие 60 дней списаний нет'
+            )}
+          </p>
 
-        <div className={styles.grid} role="grid">
-          {grid.map((day) => {
-            const key = toISODate(day)
-            const dayEvents = events.get(key) ?? []
-            const outside = day.getMonth() !== month.getMonth()
-            return (
-              <button
-                key={key}
-                type="button"
-                role="gridcell"
-                className={styles.day}
-                data-outside={outside}
-                data-today={compareDates(day, today) === 0}
-                data-selected={compareDates(day, selected) === 0}
-                aria-label={`${formatDate(day, today)}${dayEvents.length > 0 ? `, событий: ${dayEvents.length}` : ''}`}
-                aria-pressed={compareDates(day, selected) === 0}
-                onClick={() => setSelected(day)}
-              >
-                <span className={styles.dayNumber}>{day.getDate()}</span>
-                <span className={styles.dots} aria-hidden="true">
-                  {dayEvents.slice(0, MAX_DOTS).map((event, index) => (
-                    <span
-                      key={`${event.subscription.id}:${event.type}:${index}`}
-                      className={styles.dot}
-                      data-type={event.type}
-                      data-lamp={getLamp(event.subscription, today)}
-                    />
-                  ))}
-                  {dayEvents.length > MAX_DOTS && <span className={styles.more}>+{dayEvents.length - MAX_DOTS}</span>}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      <p className={styles.total}>
-        {total.payments > 0 ? (
-          <>
-            {total.payments} {pluralize(total.payments, ['платёж', 'платежа', 'платежей'])} ·{' '}
-            <span className="tabular">{hidden ? '•••• ₽' : formatMoney(total.amount, 'RUB')}</span> за месяц
-          </>
-        ) : (
-          'В этом месяце списаний нет'
-        )}
-      </p>
-
-      <section className={styles.dayList} aria-label={`События: ${formatDate(selected, today)}`}>
-        <div className={styles.dayHeader}>
-          <h3 className={styles.dayTitle}>{formatDate(selected, today)}</h3>
-          {!isCurrentMonth && (
-            <button type="button" className={`glass ${styles.todayButton}`} onClick={goToToday}>
-              Сегодня
-            </button>
-          )}
-        </div>
-
-        {selectedEvents.length === 0 ? (
-          <p className={styles.empty}>В этот день ничего не списывается.</p>
-        ) : (
-          <ul className={`card ${styles.events}`}>
-            {selectedEvents.map((event, index) => (
-              <EventRow
-                key={`${event.subscription.id}:${event.type}:${index}`}
-                event={event}
-                today={today}
-                selected={selected}
-                hidden={hidden}
-                onOpen={onOpen}
-                onMarkPaid={onMarkPaid}
-              />
+          <div className={styles.list}>
+            {listDays.map(([date, dayEvents]) => {
+              const day = parseISODate(date)
+              return (
+                <section key={date} className={styles.listGroup} aria-label={formatDate(day, today)}>
+                  <h3 className={styles.dayTitle}>{formatDate(day, today)}</h3>
+                  <ul className={`card ${styles.events}`}>
+                    {dayEvents.map((event, index) => (
+                      <EventRow
+                        key={`${event.subscription.id}:${event.type}:${index}`}
+                        event={event}
+                        today={today}
+                        selected={day}
+                        hidden={hidden}
+                        onOpen={onOpen}
+                        onMarkPaid={onMarkPaid}
+                      />
+                    ))}
+                  </ul>
+                </section>
+              )
+            })}
+          </div>
+        </>
+      ) : (
+        <>
+        <div
+          className={styles.sheet}
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={() => (swipeRef.current = null)}
+        >
+          <div className={styles.weekdays} aria-hidden="true">
+            {WEEKDAYS.map((day) => (
+              <span key={day}>{day}</span>
             ))}
-          </ul>
-        )}
-      </section>
+          </div>
+
+          <div className={styles.grid} role="grid">
+            {grid.map((day) => {
+              const key = toISODate(day)
+              const dayEvents = events.get(key) ?? []
+              const outside = day.getMonth() !== month.getMonth()
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  role="gridcell"
+                  className={styles.day}
+                  data-outside={outside}
+                  data-today={compareDates(day, today) === 0}
+                  data-selected={compareDates(day, selected) === 0}
+                  aria-label={`${formatDate(day, today)}${dayEvents.length > 0 ? `, событий: ${dayEvents.length}` : ''}`}
+                  aria-pressed={compareDates(day, selected) === 0}
+                  onClick={() => setSelected(day)}
+                >
+                  <span className={styles.dayNumber}>{day.getDate()}</span>
+                  <span className={styles.dots} aria-hidden="true">
+                    {dayEvents.slice(0, MAX_DOTS).map((event, index) => (
+                      <span
+                        key={`${event.subscription.id}:${event.type}:${index}`}
+                        className={styles.dot}
+                        data-type={event.type}
+                        data-lamp={getLamp(event.subscription, today)}
+                      />
+                    ))}
+                    {dayEvents.length > MAX_DOTS && <span className={styles.more}>+{dayEvents.length - MAX_DOTS}</span>}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        <p className={styles.total}>
+          {total.payments > 0 ? (
+            <>
+              {total.payments} {pluralize(total.payments, ['платёж', 'платежа', 'платежей'])} ·{' '}
+              <span className="tabular">{hidden ? '•••• ₽' : formatMoney(total.amount, 'RUB')}</span> за месяц
+            </>
+          ) : (
+            'В этом месяце списаний нет'
+          )}
+        </p>
+
+        <section className={styles.dayList} aria-label={`События: ${formatDate(selected, today)}`}>
+          <div className={styles.dayHeader}>
+            <h3 className={styles.dayTitle}>{formatDate(selected, today)}</h3>
+            {!isCurrentMonth && (
+              <button type="button" className={`glass ${styles.todayButton}`} onClick={goToToday}>
+                Сегодня
+              </button>
+            )}
+          </div>
+
+          {selectedEvents.length === 0 ? (
+            <p className={styles.empty}>В этот день ничего не списывается.</p>
+          ) : (
+            <ul className={`card ${styles.events}`}>
+              {selectedEvents.map((event, index) => (
+                <EventRow
+                  key={`${event.subscription.id}:${event.type}:${index}`}
+                  event={event}
+                  today={today}
+                  selected={selected}
+                  hidden={hidden}
+                  onOpen={onOpen}
+                  onMarkPaid={onMarkPaid}
+                />
+              ))}
+            </ul>
+          )}
+        </section>
+        </>
+      )}
     </section>
   )
 }
