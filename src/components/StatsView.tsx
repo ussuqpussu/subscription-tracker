@@ -1,5 +1,7 @@
+import { useMemo, useState } from 'react'
+import { getForecast } from '../utils/calendar'
 import { makeDate } from '../utils/dateUtils'
-import { formatMoney } from '../utils/format'
+import { formatMoney, formatMonthShort, formatMonthYear, formatPaymentCount } from '../utils/format'
 import type { Rates } from '../utils/rates'
 import { getCategoryShares, getSpent, getTips, type CategoryShare } from '../utils/stats'
 import type { Subscription } from '../types'
@@ -23,6 +25,13 @@ export function StatsView({ subscriptions, today, rates }: StatsViewProps) {
   const spentMonth = getSpent(subscriptions, rates, monthStart, today)
   const spentYear = getSpent(subscriptions, rates, yearStart, today)
   const total = shares.reduce((sum, item) => sum + item.amount, 0)
+
+  // Прогноз на год вперёд; выбранный столбик показывается над графиком, по умолчанию — текущий месяц.
+  const forecast = useMemo(() => getForecast(subscriptions, today, rates), [subscriptions, today, rates])
+  const [selectedMonth, setSelectedMonth] = useState(0)
+  const selected = forecast[Math.min(selectedMonth, forecast.length - 1)]
+  const peak = Math.max(...forecast.map((item) => item.amount))
+  const yearTotal = forecast.reduce((sum, item) => sum + item.amount, 0)
 
   // Кольцо рисуется одной окружностью: каждая доля — свой отрезок штриха со смещением.
   const segments = shares.reduce<(CategoryShare & { color: string; offset: number })[]>((acc, item, index) => {
@@ -51,6 +60,48 @@ export function StatsView({ subscriptions, today, rates }: StatsViewProps) {
             </div>
             <p className={styles.hint}>Считается по нажатиям «Оплачено», поэтому учитывает только отмеченные платежи.</p>
           </section>
+
+          {peak > 0 && (
+            <section className={`card ${styles.card}`} aria-labelledby="stats-forecast">
+              <h3 id="stats-forecast" className={styles.cardTitle}>
+                Прогноз на год
+              </h3>
+              <div className={styles.forecastHead}>
+                <span className={styles.forecastMonth}>{formatMonthYear(selected.month)}</span>
+                <span className={`tabular ${styles.forecastValue}`}>{formatMoney(selected.amount, 'RUB')}</span>
+              </div>
+              <ol className={styles.bars}>
+                {forecast.map((item, index) => (
+                  <li key={item.month.getTime()} className={styles.barItem}>
+                    <button
+                      type="button"
+                      className={styles.bar}
+                      data-current={index === 0}
+                      data-selected={item === selected}
+                      onClick={() => setSelectedMonth(index)}
+                    >
+                      <span
+                        className={styles.barFill}
+                        style={{ height: `${Math.max((item.amount / peak) * 100, 2)}%` }}
+                        aria-hidden="true"
+                      />
+                      <span className="visually-hidden">
+                        {formatMonthYear(item.month)}: {formatMoney(item.amount, 'RUB')},{' '}
+                        {formatPaymentCount(item.payments)}
+                      </span>
+                    </button>
+                    <span className={styles.barLabel} aria-hidden="true">
+                      {formatMonthShort(item.month)}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+              <p className={styles.hint}>
+                За 12 месяцев — {formatMoney(yearTotal, 'RUB')}. Считается по текущим ценам и расписанию активных
+                подписок.
+              </p>
+            </section>
+          )}
 
           {segments.length > 0 && (
             <section className={`card ${styles.card}`} aria-labelledby="stats-categories">

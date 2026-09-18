@@ -96,6 +96,38 @@
   color: var(--accent-text);
 }
 
+/* Выпадающий список в строке настроек: системная стрелка убрана, своя — поверх. */
+.select-field {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.select-field select {
+  appearance: none;
+  min-height: 36px;
+  padding: 0 30px 0 12px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--label);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.select-field select:disabled {
+  opacity: 0.45;
+}
+
+.select-field svg {
+  position: absolute;
+  right: 10px;
+  width: 14px;
+  height: 14px;
+  color: var(--label-secondary);
+  pointer-events: none;
+}
+
 .icon-button {
   appearance: none;
   display: inline-grid;

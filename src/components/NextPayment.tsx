@@ -36,7 +36,7 @@ export function NextPayment({ subscriptions, today, hidden, onOpen }: NextPaymen
           <span className={styles.name}>{next.name}</span>
           <span className={styles.due}>
             <StatusLamp lamp={getLamp(next, today)} size="small" />
-            {dueText}
+            <span className={styles.dueText}>{dueText}</span>
           </span>
         </span>
         <span className={`tabular ${styles.amount}`}>

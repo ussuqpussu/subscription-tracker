@@ -50,6 +50,13 @@ export function formatMonthYear(date: Date): string {
   return monthYearFormatter.format(date).replace(' г.', '')
 }
 
+const monthShortFormatter = new Intl.DateTimeFormat(LOCALE, { month: 'short' })
+
+/** «сен» — подпись под столбиком графика. Три буквы, иначе на узком экране подписи слипаются. */
+export function formatMonthShort(date: Date): string {
+  return monthShortFormatter.format(date).replace('.', '').slice(0, 3)
+}
+
 /** Первая буква названия для плитки-аватара. Array.from не разрезает эмодзи пополам. */
 export function getInitial(text: string): string {
   return (Array.from(text.trim())[0] ?? '').toLocaleUpperCase('ru')

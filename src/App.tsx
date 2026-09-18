@@ -31,6 +31,7 @@ import {
   DEFAULT_ACCENT,
   HIDE_AMOUNTS_KEY,
   LAST_BACKUP_KEY,
+  REMINDER_SETTINGS_KEY,
   STORAGE_KEY,
   THEME_KEY,
   type AccentId,
@@ -59,6 +60,7 @@ import {
   sendTestPush,
   type PushState,
 } from './utils/push'
+import { DEFAULT_REMINDER_SETTINGS, normalizeReminderSettings } from './utils/pushReminders'
 import { normalizeSubscriptions } from './utils/subscriptionSchema'
 import { deleteVault, isSyncAvailable } from './utils/syncApi'
 import {
@@ -113,6 +115,11 @@ export default function App() {
   const [syncMessage, setSyncMessage] = useState<SyncMessage | null>(null)
   const [lastBackupAt, setLastBackupAt] = useLocalStorage<number>(LAST_BACKUP_KEY, 0, (raw) =>
     typeof raw === 'number' ? raw : 0,
+  )
+  const [reminderSettings, setReminderSettings] = useLocalStorage(
+    REMINDER_SETTINGS_KEY,
+    DEFAULT_REMINDER_SETTINGS,
+    normalizeReminderSettings,
   )
   const [pushState, setPushState] = useState<PushState>(isPushConfigured ? 'off' : 'unconfigured')
   const [pushBusy, setPushBusy] = useState(false)
@@ -200,7 +207,7 @@ export default function App() {
       .catch(() => undefined)
   }, [])
   useEffect(refreshPushState, [refreshPushState])
-  usePushSync(subscriptions, today, pushState === 'on')
+  usePushSync(subscriptions, today, pushState === 'on', reminderSettings)
 
   const editing = editor?.mode === 'edit' ? (subscriptions.find((item) => item.id === editor.id) ?? null) : null
   const formOpen = editor?.mode === 'create' || editing !== null
@@ -355,7 +362,7 @@ export default function App() {
   const handlePushToggle = (enabled: boolean) => {
     setPushBusy(true)
     setPushMessage(null)
-    const request = enabled ? enablePush(subscriptions, new Date()) : disablePush()
+    const request = enabled ? enablePush(subscriptions, new Date(), reminderSettings) : disablePush()
     request
       .then((state) => {
         setPushState(state)
@@ -500,6 +507,8 @@ export default function App() {
         pushState={pushState}
         busy={pushBusy}
         message={pushMessage}
+        settings={reminderSettings}
+        onSettingsChange={setReminderSettings}
         onPushToggle={handlePushToggle}
         onTestPush={handleTestPush}
         onExportAll={handleExportAll}

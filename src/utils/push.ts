@@ -5,7 +5,7 @@
  */
 import { API_URL as apiUrl } from '../config'
 import type { Subscription } from '../types'
-import { buildPushReminders } from './pushReminders'
+import { buildPushReminders, type ReminderSettings } from './pushReminders'
 
 const vapidPublicKey = String(import.meta.env.VITE_VAPID_PUBLIC_KEY ?? '')
 
@@ -83,12 +83,17 @@ async function callServer(method: 'POST' | 'DELETE', path: string, body: unknown
   if (!response.ok) throw new PushServerError(response.status)
 }
 
-function sendSchedule(subscription: PushSubscription, subscriptions: readonly Subscription[], now: Date) {
+function sendSchedule(
+  subscription: PushSubscription,
+  subscriptions: readonly Subscription[],
+  now: Date,
+  settings: ReminderSettings,
+) {
   const { endpoint, keys } = subscription.toJSON()
   return callServer('POST', '/api/subscribe', {
     endpoint,
     keys,
-    reminders: buildPushReminders(subscriptions, now),
+    reminders: buildPushReminders(subscriptions, now, settings),
   })
 }
 
@@ -96,7 +101,11 @@ function sendSchedule(subscription: PushSubscription, subscriptions: readonly Su
  * Включает пуши. Вызывать прямо из обработчика нажатия:
  * iOS показывает запрос разрешения только в ответ на жест, поэтому requestPermission идёт первым.
  */
-export async function enablePush(subscriptions: readonly Subscription[], now: Date): Promise<PushState> {
+export async function enablePush(
+  subscriptions: readonly Subscription[],
+  now: Date,
+  settings: ReminderSettings,
+): Promise<PushState> {
   const permission = await Notification.requestPermission()
   if (permission === 'denied') return 'denied'
   if (permission !== 'granted') return 'off'
@@ -110,7 +119,7 @@ export async function enablePush(subscriptions: readonly Subscription[], now: Da
       userVisibleOnly: true,
       applicationServerKey: base64UrlToBytes(vapidPublicKey),
     }))
-  await sendSchedule(subscription, subscriptions, now)
+  await sendSchedule(subscription, subscriptions, now, settings)
   return 'on'
 }
 
@@ -126,10 +135,14 @@ export async function disablePush(): Promise<PushState> {
 }
 
 /** Обновляет расписание на сервере. Тихо ничего не делает, если пуши выключены. */
-export async function syncPush(subscriptions: readonly Subscription[], now: Date): Promise<void> {
+export async function syncPush(
+  subscriptions: readonly Subscription[],
+  now: Date,
+  settings: ReminderSettings,
+): Promise<void> {
   if (!isPushConfigured || !isPushSupported() || Notification.permission !== 'granted') return
   const subscription = await getPushSubscription()
-  if (subscription) await sendSchedule(subscription, subscriptions, now)
+  if (subscription) await sendSchedule(subscription, subscriptions, now, settings)
 }
 
 export async function sendTestPush(): Promise<void> {
