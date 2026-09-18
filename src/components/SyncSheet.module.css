@@ -84,7 +84,7 @@
   height: 32px;
   border-radius: 8px;
   background: var(--green);
-  color: #06240f;
+  color: var(--on-green);
 }
 
 .rowIcon svg {

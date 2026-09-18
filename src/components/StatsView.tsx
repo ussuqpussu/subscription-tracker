@@ -6,7 +6,7 @@ import type { Subscription } from '../types'
 import styles from './StatsView.module.css'
 
 /** Цвета долей: повторяются по кругу, если категорий больше. */
-const COLORS = ['#ffb4a2', '#5e9cff', '#30d158', '#ffd60a', '#bf8cff', '#ff6f91', '#6fd3d6']
+const COLORS = Array.from({ length: 7 }, (_, index) => `var(--chart-${index + 1})`)
 
 interface StatsViewProps {
   subscriptions: readonly Subscription[]
@@ -67,7 +67,7 @@ export function StatsView({ subscriptions, today, rates }: StatsViewProps) {
                       cy="21"
                       r="15.9"
                       className={styles.donutSegment}
-                      stroke={segment.color}
+                      style={{ stroke: segment.color }}
                       strokeDasharray={`${segment.share * 100} ${100 - segment.share * 100}`}
                       strokeDashoffset={`${25 - segment.offset * 100}`}
                     />

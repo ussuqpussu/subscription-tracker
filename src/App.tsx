@@ -1,12 +1,20 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
 import styles from './App.module.css'
+import { AppearanceSheet } from './components/AppearanceSheet'
 import { BackupReminder } from './components/BackupReminder'
 import { BottomBar, type AppTab } from './components/BottomBar'
 import { CalendarView } from './components/CalendarView'
 import { ConfirmSheet, type ConfirmRequest } from './components/ConfirmSheet'
 import { EmptyState } from './components/EmptyState'
 import { FiltersSheet } from './components/FiltersSheet'
-import { ArrowDownDocIcon, ArrowUpDocIcon, CalendarPlusIcon, CloudIcon, TrashIcon } from './components/icons'
+import {
+  AppearanceIcon,
+  ArrowDownDocIcon,
+  ArrowUpDocIcon,
+  CalendarPlusIcon,
+  CloudIcon,
+  TrashIcon,
+} from './components/icons'
 import type { MenuItem } from './components/MoreMenu'
 import { NavBar } from './components/NavBar'
 import { NextPayment } from './components/NextPayment'
@@ -18,7 +26,16 @@ import { SubscriptionForm, type SubscriptionValue } from './components/Subscript
 import { SubscriptionList } from './components/SubscriptionList'
 import { SummaryBar } from './components/SummaryBar'
 import { Toast, type ToastMessage } from './components/Toast'
-import { HIDE_AMOUNTS_KEY, LAST_BACKUP_KEY, STORAGE_KEY } from './constants'
+import {
+  ACCENT_KEY,
+  DEFAULT_ACCENT,
+  HIDE_AMOUNTS_KEY,
+  LAST_BACKUP_KEY,
+  STORAGE_KEY,
+  THEME_KEY,
+  type AccentId,
+  type ThemeMode,
+} from './constants'
 import { useLocalStorage } from './hooks/useLocalStorage'
 import { usePushSync } from './hooks/usePushSync'
 import { useRates } from './hooks/useRates'
@@ -32,6 +49,7 @@ import { shareOrDownload, type ShareFile } from './utils/fileShare'
 import { formatDate, formatSubscriptionCount } from './utils/format'
 import { createAllSubscriptionsIcs, createSubscriptionIcs, icsFileName } from './utils/icsUtils'
 import { createId } from './utils/id'
+import { applyAccent, applyTheme, parseAccentId, parseThemeMode, watchSystemTheme } from './utils/theme'
 import {
   disablePush,
   enablePush,
@@ -78,6 +96,8 @@ export default function App() {
   const today = useToday()
 
   const [hideAmounts, setHideAmounts] = useLocalStorage(HIDE_AMOUNTS_KEY, false, parseStoredFlag)
+  const [theme, setTheme] = useLocalStorage<ThemeMode>(THEME_KEY, 'auto', parseThemeMode)
+  const [accent, setAccent] = useLocalStorage<AccentId>(ACCENT_KEY, DEFAULT_ACCENT, parseAccentId)
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -87,6 +107,7 @@ export default function App() {
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [tab, setTab] = useState<AppTab>('home')
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [appearanceOpen, setAppearanceOpen] = useState(false)
   const [syncOpen, setSyncOpen] = useState(false)
   const [syncBusy, setSyncBusy] = useState(false)
   const [syncMessage, setSyncMessage] = useState<SyncMessage | null>(null)
@@ -97,6 +118,12 @@ export default function App() {
   const [pushBusy, setPushBusy] = useState(false)
   const [pushMessage, setPushMessage] = useState<PushMessage | null>(null)
   const restoreInputRef = useRef<HTMLInputElement>(null)
+
+  // Оформление ставится до отрисовки, иначе первый кадр успевает мигнуть чужой темой.
+  useLayoutEffect(() => applyTheme(theme), [theme])
+  useLayoutEffect(() => applyAccent(accent), [accent])
+  // В режиме «Авто» цвет строки состояния должен меняться вместе с системной темой.
+  useEffect(() => (theme === 'auto' ? watchSystemTheme(() => applyTheme('auto')) : undefined), [theme])
 
   const categories = useMemo(() => collectCategories(subscriptions), [subscriptions])
   // Если категорию удалили или переименовали, фильтр по ней молча сбрасывается.
@@ -359,6 +386,12 @@ export default function App() {
       },
     },
     {
+      id: 'appearance',
+      label: 'Оформление',
+      icon: <AppearanceIcon />,
+      onSelect: () => setAppearanceOpen(true),
+    },
+    {
       id: 'export-all',
       label: 'Все в календарь',
       icon: <CalendarPlusIcon />,
@@ -483,6 +516,14 @@ export default function App() {
         category={activeCategory}
         onCategoryChange={setCategoryFilter}
         onReset={resetFilters}
+      />
+      <AppearanceSheet
+        open={appearanceOpen}
+        onClose={() => setAppearanceOpen(false)}
+        theme={theme}
+        onThemeChange={setTheme}
+        accent={accent}
+        onAccentChange={setAccent}
       />
       <SyncSheet
         open={syncOpen}

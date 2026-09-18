@@ -6,7 +6,7 @@
   border: 0;
   border-radius: var(--radius-card);
   background: var(--grad-card);
-  color: #ffffff;
+  color: var(--on-grad);
   text-align: left;
   transition: transform 0.2s var(--ease-out);
 }
@@ -20,7 +20,7 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  color: rgba(255, 255, 255, 0.86);
+  color: var(--on-grad-muted);
   font-size: 13px;
   font-weight: 600;
 }
@@ -42,12 +42,12 @@
 
 /* Светлая обводка отделяет любой логотип от градиента карточки. */
 .logo[data-kind] {
-  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  border: 1.5px solid var(--on-grad-rim);
 }
 
 /* У буквы-заглушки — полупрозрачная тёмная подложка. */
 .logo[data-kind='letter'] {
-  background: rgba(0, 0, 0, 0.18);
+  background: var(--on-grad-shade);
 }
 
 .text {
@@ -68,14 +68,14 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: rgba(255, 255, 255, 0.86);
+  color: var(--on-grad-muted);
   font-size: 13px;
   font-weight: 500;
 }
 
 /* Красная лампочка сливается с малиновым фоном: обводим её белым. */
 .due > :first-child {
-  outline: 1.5px solid rgba(255, 255, 255, 0.9);
+  outline: 1.5px solid var(--on-grad-outline);
 }
 
 .amount {

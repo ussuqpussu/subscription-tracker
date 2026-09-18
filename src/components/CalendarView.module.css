@@ -113,9 +113,9 @@
 
 .day[data-selected='true'] .dayNumber {
   background:
-    radial-gradient(120% 90% at 50% -20%, rgba(255, 255, 255, 0.4), transparent 60%),
+    radial-gradient(120% 90% at 50% -20%, var(--accent-sheen), transparent 60%),
     var(--accent);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 1px 0 var(--accent-sheen-edge);
   color: var(--on-accent);
   font-weight: 600;
 }

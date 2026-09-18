@@ -264,3 +264,13 @@ export function SlidersIcon(props: IconProps) {
     </Icon>
   )
 }
+
+/* Круг, наполовину закрашенный, — значок темы оформления, как в Настройках iOS. */
+export function AppearanceIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none" />
+    </Icon>
+  )
+}

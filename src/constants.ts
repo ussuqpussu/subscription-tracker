@@ -11,6 +11,39 @@ export const SYNC_KEY = 'subscription-tracker:sync'
 /** Когда последний раз сохраняли резервную копию. */
 export const LAST_BACKUP_KEY = 'subscription-tracker:last-backup'
 
+/** Тема оформления: «Авто» следует за системной. */
+export const THEME_KEY = 'subscription-tracker:theme'
+
+/** Акцентная палитра приложения. */
+export const ACCENT_KEY = 'subscription-tracker:accent'
+
+export type ThemeMode = 'auto' | 'light' | 'dark'
+
+export type AccentId = 'peach' | 'mint' | 'dusk' | 'lime' | 'sky' | 'garnet' | 'ocean' | 'sand' | 'graphite'
+
+export interface AccentPalette {
+  id: AccentId
+  label: string
+  /** Цвет образца в окне «Оформление»: акцент и градиент палитры. */
+  color: string
+  gradient: string
+}
+
+export const DEFAULT_ACCENT: AccentId = 'peach'
+
+/** Палитры: id совпадает со значением data-accent в tokens.css. */
+export const ACCENTS: readonly AccentPalette[] = [
+  { id: 'peach', label: 'Персик', color: '#ffb4a2', gradient: 'linear-gradient(135deg, #d9486f, #e98b4f)' },
+  { id: 'mint', label: 'Мята', color: '#7ee0c3', gradient: 'linear-gradient(135deg, #0f766e, #19a98c)' },
+  { id: 'dusk', label: 'Сумерки', color: '#d8b4fe', gradient: 'linear-gradient(135deg, #6d28d9, #b429c7)' },
+  { id: 'lime', label: 'Лайм', color: '#d4f46a', gradient: 'linear-gradient(135deg, #3f6212, #6ba31a)' },
+  { id: 'sky', label: 'Небо', color: '#a8cdff', gradient: 'linear-gradient(135deg, #1d4ed8, #3e8ed0)' },
+  { id: 'garnet', label: 'Гранат', color: '#ff9aa2', gradient: 'linear-gradient(135deg, #9f1239, #e11d48)' },
+  { id: 'ocean', label: 'Океан', color: '#7fd7e8', gradient: 'linear-gradient(135deg, #0e7490, #1fa3a3)' },
+  { id: 'sand', label: 'Песок', color: '#e8c39e', gradient: 'linear-gradient(135deg, #8a5a2b, #c98b4b)' },
+  { id: 'graphite', label: 'Графит', color: '#d8d8dd', gradient: 'linear-gradient(135deg, #4b4b52, #7b7b85)' },
+]
+
 /** Последние курсы ЦБ для сводки трат в рублях. */
 export const RATES_KEY = 'subscription-tracker:rates'
 
