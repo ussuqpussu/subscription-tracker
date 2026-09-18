@@ -2,6 +2,7 @@ import { useRef, useState, type MouseEvent, type PointerEvent } from 'react'
 import type { Subscription } from '../types'
 import { getDaysUntil, getDueDate } from '../utils/dateUtils'
 import { formatDate, formatDueText, formatMoney, formatPeriod, formatStatus } from '../utils/format'
+import { tapHaptic } from '../utils/haptics'
 import { getLamp } from '../utils/subscriptionUtils'
 import { CalendarPlusIcon, CheckIcon, TrashIcon } from './icons'
 import { Logo } from './Logo'
@@ -121,10 +122,16 @@ export function SubscriptionRow({
     const distance = Math.abs(drag.offset)
     const action = drag.offset < 0 ? 'delete' : 'paid'
     const fullSwipe = event.type === 'pointerup' && distance > content.offsetWidth * FULL_SWIPE
-    setRevealed(!fullSwipe && distance > REVEAL_WIDTH / 2 ? action : 'none')
+    const next = !fullSwipe && distance > REVEAL_WIDTH / 2 ? action : 'none'
+    // Кнопка выехала из-под строки — отзываемся щелчком, как нативный свайп в «Почте».
+    if (next !== 'none' && next !== revealed) tapHaptic()
+    setRevealed(next)
     if (!fullSwipe) return
     if (action === 'delete') onDelete(subscription)
-    else onMarkPaid(subscription)
+    else {
+      tapHaptic()
+      onMarkPaid(subscription)
+    }
   }
 
   const handleClickCapture = (event: MouseEvent<HTMLDivElement>) => {
@@ -151,6 +158,7 @@ export function SubscriptionRow({
           aria-hidden={revealed !== 'paid'}
           onClick={() => {
             setRevealed('none')
+            tapHaptic()
             onMarkPaid(subscription)
           }}
         >
@@ -215,7 +223,14 @@ export function SubscriptionRow({
 
         {needsPayment && (
           <div className={styles.payRow}>
-            <button type="button" className={`glass ${styles.pay}`} onClick={() => onMarkPaid(subscription)}>
+            <button
+              type="button"
+              className={`glass ${styles.pay}`}
+              onClick={() => {
+                tapHaptic()
+                onMarkPaid(subscription)
+              }}
+            >
               <CheckIcon />
               Оплачено
             </button>

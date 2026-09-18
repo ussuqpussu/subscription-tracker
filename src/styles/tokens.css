@@ -1,19 +1,330 @@
 /*
- * Дизайн-токены: тёмная OLED-тема в стиле iOS-финтеха.
+ * Дизайн-токены в стиле iOS-финтеха: две темы и девять акцентных палитр.
  * Контент лежит на плоских карточках, плавающие элементы сделаны из Liquid Glass.
- * Вторичный текст #8E8E93 даёт контраст не ниже 4.5:1 и на #000, и на #1C1C1E.
+ *
+ * Общее (шрифты, радиусы, отступы, тайминги) живёт в :root.
+ * Цвета собраны в два набора с одинаковыми именами:
+ *   тёмный — значения по умолчанию плюс :root[data-theme='dark'];
+ *   светлый — системная тема и :root[data-theme='light'].
+ * Акценты выбираются атрибутом data-accent на <html>: палитра объявляет пару значений
+ * (--p-*-d для тёмной темы и --p-*-l для светлой), а тема раскладывает их по токенам.
  */
 
 :root {
-  color-scheme: dark;
-
   --font-text: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI Variable Text', 'Segoe UI', system-ui,
     'Helvetica Neue', Arial, sans-serif;
   /* SF Pro Rounded — мягкий шрифт для крупных сумм и заголовков, как в банковских приложениях. */
   --font-rounded: ui-rounded, 'SF Pro Rounded', -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Display',
     system-ui, sans-serif;
 
-  /* Фон и поверхности: глубина за счёт ступеней яркости и тонкой рамки, без теней */
+  /* Радиусы и отступы (сетка 8pt) */
+  --radius-card: 24px;
+  --radius-group: 16px;
+  --radius-small: 12px;
+  --radius-tile: 10px;
+  --radius-sheet: 30px;
+  --screen-margin: 16px;
+
+  --ease-spring: cubic-bezier(0.32, 1.28, 0.54, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --glass-blur: 16px;
+  --glass-blur-thick: 32px;
+  --glass-saturate: 190%;
+
+  /*
+   * Градиент карточки насыщенный в обеих темах, поэтому текст на нём всегда белый:
+   * эти токены от темы не зависят.
+   */
+  --on-grad: #ffffff;
+  --on-grad-muted: rgba(255, 255, 255, 0.86);
+  --on-grad-rim: rgba(255, 255, 255, 0.55);
+  --on-grad-shade: rgba(0, 0, 0, 0.18);
+  --on-grad-outline: rgba(255, 255, 255, 0.9);
+}
+
+/*
+ * Палитры. В каждой — свои значения для тёмной темы (пастельный акцент, тёмный текст
+ * на заливке) и для светлой (акцент темнее фона, текст на заливке белый).
+ * Контраст акцента к фону и текста к заливке в обеих темах не ниже 4.5:1.
+ */
+
+:root,
+:root[data-accent='peach'] {
+  --p-accent-d: #ffb4a2;
+  --p-pressed-d: #f59a86;
+  --p-tint-d: rgba(255, 180, 162, 0.14);
+  --p-on-d: #3a1408;
+  --p-grad-d: linear-gradient(135deg, #d9486f 0%, #e98b4f 100%);
+  --p-accent-l: #c02a52;
+  --p-pressed-l: #a81f46;
+  --p-tint-l: rgba(192, 42, 82, 0.12);
+  --p-on-l: #ffffff;
+  --p-grad-l: linear-gradient(135deg, #c02a52 0%, #d4703a 100%);
+}
+
+:root[data-accent='mint'] {
+  --p-accent-d: #7ee0c3;
+  --p-pressed-d: #62cdaf;
+  --p-tint-d: rgba(126, 224, 195, 0.14);
+  --p-on-d: #04342c;
+  --p-grad-d: linear-gradient(135deg, #0f766e 0%, #19a98c 100%);
+  --p-accent-l: #0f766e;
+  --p-pressed-l: #0b5f59;
+  --p-tint-l: rgba(15, 118, 110, 0.12);
+  --p-on-l: #ffffff;
+  --p-grad-l: linear-gradient(135deg, #0b5f59 0%, #127f6b 100%);
+}
+
+:root[data-accent='dusk'] {
+  --p-accent-d: #d8b4fe;
+  --p-pressed-d: #c49af0;
+  --p-tint-d: rgba(216, 180, 254, 0.14);
+  --p-on-d: #26215c;
+  --p-grad-d: linear-gradient(135deg, #6d28d9 0%, #b429c7 100%);
+  --p-accent-l: #6d28d9;
+  --p-pressed-l: #5b21b6;
+  --p-tint-l: rgba(109, 40, 217, 0.12);
+  --p-on-l: #ffffff;
+  --p-grad-l: linear-gradient(135deg, #5b21b6 0%, #94229f 100%);
+}
+
+:root[data-accent='lime'] {
+  --p-accent-d: #d4f46a;
+  --p-pressed-d: #c2e651;
+  --p-tint-d: rgba(212, 244, 106, 0.14);
+  --p-on-d: #173404;
+  --p-grad-d: linear-gradient(135deg, #3f6212 0%, #6ba31a 100%);
+  --p-accent-l: #3f6212;
+  --p-pressed-l: #33500f;
+  --p-tint-l: rgba(63, 98, 18, 0.12);
+  --p-on-l: #ffffff;
+  --p-grad-l: linear-gradient(135deg, #365314 0%, #587f16 100%);
+}
+
+:root[data-accent='sky'] {
+  --p-accent-d: #a8cdff;
+  --p-pressed-d: #90baf4;
+  --p-tint-d: rgba(168, 205, 255, 0.14);
+  --p-on-d: #042c53;
+  --p-grad-d: linear-gradient(135deg, #1d4ed8 0%, #3e8ed0 100%);
+  --p-accent-l: #1d4ed8;
+  --p-pressed-l: #1a42b4;
+  --p-tint-l: rgba(29, 78, 216, 0.12);
+  --p-on-l: #ffffff;
+  --p-grad-l: linear-gradient(135deg, #1e40af 0%, #2f6fa8 100%);
+}
+
+:root[data-accent='garnet'] {
+  --p-accent-d: #ff9aa2;
+  --p-pressed-d: #f5838d;
+  --p-tint-d: rgba(255, 154, 162, 0.14);
+  --p-on-d: #3d0713;
+  --p-grad-d: linear-gradient(135deg, #9f1239 0%, #e11d48 100%);
+  --p-accent-l: #9f1239;
+  --p-pressed-l: #860f30;
+  --p-tint-l: rgba(159, 18, 57, 0.12);
+  --p-on-l: #ffffff;
+  --p-grad-l: linear-gradient(135deg, #8d0f33 0%, #be123c 100%);
+}
+
+:root[data-accent='ocean'] {
+  --p-accent-d: #7fd7e8;
+  --p-pressed-d: #66c6da;
+  --p-tint-d: rgba(127, 215, 232, 0.14);
+  --p-on-d: #04303a;
+  --p-grad-d: linear-gradient(135deg, #0e7490 0%, #1fa3a3 100%);
+  --p-accent-l: #0e7490;
+  --p-pressed-l: #0b5c73;
+  --p-tint-l: rgba(14, 116, 144, 0.12);
+  --p-on-l: #ffffff;
+  --p-grad-l: linear-gradient(135deg, #0b5c73 0%, #137f7f 100%);
+}
+
+:root[data-accent='sand'] {
+  --p-accent-d: #e8c39e;
+  --p-pressed-d: #dbae87;
+  --p-tint-d: rgba(232, 195, 158, 0.14);
+  --p-on-d: #3a2412;
+  --p-grad-d: linear-gradient(135deg, #8a5a2b 0%, #c98b4b 100%);
+  --p-accent-l: #8a5a2b;
+  --p-pressed-l: #734a22;
+  --p-tint-l: rgba(138, 90, 43, 0.12);
+  --p-on-l: #ffffff;
+  --p-grad-l: linear-gradient(135deg, #7a4d22 0%, #a5703a 100%);
+}
+
+:root[data-accent='graphite'] {
+  --p-accent-d: #d8d8dd;
+  --p-pressed-d: #c2c2c9;
+  --p-tint-d: rgba(216, 216, 221, 0.14);
+  --p-on-d: #1c1c1e;
+  --p-grad-d: linear-gradient(135deg, #4b4b52 0%, #7b7b85 100%);
+  --p-accent-l: #4b4b52;
+  --p-pressed-l: #3a3a40;
+  --p-tint-l: rgba(75, 75, 82, 0.12);
+  --p-on-l: #ffffff;
+  --p-grad-l: linear-gradient(135deg, #3a3a40 0%, #616169 100%);
+}
+
+/*
+ * Светлый набор: фон iOS #F2F2F7, поверхности белые, разделители — полупрозрачный
+ * графит. Вторичный текст #6E6E73 даёт контраст 5:1 и на белом, и на фоне.
+ * Идёт до тёмного набора, поэтому data-theme='dark' его перебивает.
+ */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    color-scheme: light;
+
+    --bg: #f2f2f7;
+    --surface: #ffffff;
+    --surface-2: #ffffff;
+    --surface-3: #e9e9ee;
+    --hairline: rgba(60, 60, 67, 0.12);
+    --hairline-strong: rgba(60, 60, 67, 0.22);
+
+    --label: #0b0b0f;
+    --label-secondary: #6e6e73;
+    --label-tertiary: #aeaeb2;
+    --separator: rgba(60, 60, 67, 0.12);
+    --fill: rgba(118, 118, 128, 0.12);
+    --fill-strong: rgba(118, 118, 128, 0.2);
+    --backdrop-dim: rgba(0, 0, 0, 0.32);
+    --badge-ring: #ffffff;
+
+    --green: #1a7f37;
+    --red: #d70015;
+    --on-green: #ffffff;
+    --on-red: #ffffff;
+
+    --lamp-green: #1fa855;
+    --lamp-yellow: #e8a100;
+    --lamp-red: #e5342a;
+    --lamp-off: #c7c7cc;
+    --text-green: #1a7f37;
+    --text-yellow: #8a6100;
+    --text-red: #d70015;
+    --text-off: #6e6e73;
+
+    --glass-fill: rgba(255, 255, 255, 0.62);
+    --glass-fill-thick: rgba(252, 252, 254, 0.86);
+    --glass-fallback: rgba(248, 248, 252, 0.98);
+    --glass-rim-strong: rgba(255, 255, 255, 0.9);
+    --glass-rim-soft: rgba(255, 255, 255, 0.5);
+    --glass-rim-far: rgba(60, 60, 67, 0.14);
+    --glass-sheen: rgba(255, 255, 255, 0.6);
+    --glass-inner-glow: rgba(255, 255, 255, 0.5);
+    --glass-inner-shade: rgba(60, 60, 67, 0.12);
+    --glass-shadow: 0 10px 30px rgba(60, 60, 67, 0.14);
+
+    --lens-fill: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.72));
+    --lens-fill-active: rgba(255, 255, 255, 0.92);
+    --lens-rim: rgba(60, 60, 67, 0.1);
+    --lens-highlight: rgba(255, 255, 255, 0.9);
+    --lens-shade: rgba(60, 60, 67, 0.1);
+    --thumb-fill: linear-gradient(180deg, #ffffff, #fbfbfd);
+    --accent-sheen: rgba(255, 255, 255, 0.22);
+    --accent-sheen-edge: rgba(255, 255, 255, 0.34);
+
+    --chart-1: #c2410c;
+    --chart-2: #2563eb;
+    --chart-3: #1a7f37;
+    --chart-4: #a16207;
+    --chart-5: #7c3aed;
+    --chart-6: #be185d;
+    --chart-7: #0e7490;
+
+    --accent: var(--p-accent-l);
+    --accent-pressed: var(--p-pressed-l);
+    --accent-text: var(--p-accent-l);
+    --accent-tint: var(--p-tint-l);
+    --on-accent: var(--p-on-l);
+    --focus: var(--p-accent-l);
+    --grad-card: var(--p-grad-l);
+  }
+}
+
+/* Тот же светлый набор, включённый вручную из окна «Оформление». */
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: #f2f2f7;
+  --surface: #ffffff;
+  --surface-2: #ffffff;
+  --surface-3: #e9e9ee;
+  --hairline: rgba(60, 60, 67, 0.12);
+  --hairline-strong: rgba(60, 60, 67, 0.22);
+
+  --label: #0b0b0f;
+  --label-secondary: #6e6e73;
+  --label-tertiary: #aeaeb2;
+  --separator: rgba(60, 60, 67, 0.12);
+  --fill: rgba(118, 118, 128, 0.12);
+  --fill-strong: rgba(118, 118, 128, 0.2);
+  --backdrop-dim: rgba(0, 0, 0, 0.32);
+  --badge-ring: #ffffff;
+
+  --green: #1a7f37;
+  --red: #d70015;
+  --on-green: #ffffff;
+  --on-red: #ffffff;
+
+  --lamp-green: #1fa855;
+  --lamp-yellow: #e8a100;
+  --lamp-red: #e5342a;
+  --lamp-off: #c7c7cc;
+  --text-green: #1a7f37;
+  --text-yellow: #8a6100;
+  --text-red: #d70015;
+  --text-off: #6e6e73;
+
+  --glass-fill: rgba(255, 255, 255, 0.62);
+  --glass-fill-thick: rgba(252, 252, 254, 0.86);
+  --glass-fallback: rgba(248, 248, 252, 0.98);
+  --glass-rim-strong: rgba(255, 255, 255, 0.9);
+  --glass-rim-soft: rgba(255, 255, 255, 0.5);
+  --glass-rim-far: rgba(60, 60, 67, 0.14);
+  --glass-sheen: rgba(255, 255, 255, 0.6);
+  --glass-inner-glow: rgba(255, 255, 255, 0.5);
+  --glass-inner-shade: rgba(60, 60, 67, 0.12);
+  --glass-shadow: 0 10px 30px rgba(60, 60, 67, 0.14);
+
+  --lens-fill: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.72));
+  --lens-fill-active: rgba(255, 255, 255, 0.92);
+  --lens-rim: rgba(60, 60, 67, 0.1);
+  --lens-highlight: rgba(255, 255, 255, 0.9);
+  --lens-shade: rgba(60, 60, 67, 0.1);
+  --thumb-fill: linear-gradient(180deg, #ffffff, #fbfbfd);
+  --accent-sheen: rgba(255, 255, 255, 0.22);
+  --accent-sheen-edge: rgba(255, 255, 255, 0.34);
+
+  --chart-1: #c2410c;
+  --chart-2: #2563eb;
+  --chart-3: #1a7f37;
+  --chart-4: #a16207;
+  --chart-5: #7c3aed;
+  --chart-6: #be185d;
+  --chart-7: #0e7490;
+
+  --accent: var(--p-accent-l);
+  --accent-pressed: var(--p-pressed-l);
+  --accent-text: var(--p-accent-l);
+  --accent-tint: var(--p-tint-l);
+  --on-accent: var(--p-on-l);
+  --focus: var(--p-accent-l);
+  --grad-card: var(--p-grad-l);
+}
+
+/*
+ * Тёмный набор — значения по умолчанию. Глубина за счёт ступеней яркости и тонкой
+ * рамки, без теней. Вторичный текст #8E8E93 даёт контраст не ниже 4.5:1 и на #000,
+ * и на #1C1C1E. Правило идёт последним, поэтому data-theme='dark' перебивает
+ * системную светлую тему.
+ */
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
   --bg: #000000;
   --surface: #1c1c1e;
   --surface-2: #2c2c2e;
@@ -21,7 +332,6 @@
   --hairline: rgba(255, 255, 255, 0.08);
   --hairline-strong: rgba(255, 255, 255, 0.16);
 
-  /* Текст */
   --label: #ffffff;
   --label-secondary: #8e8e93;
   --label-tertiary: #636366;
@@ -29,20 +339,13 @@
   --fill: rgba(118, 118, 128, 0.24);
   --fill-strong: rgba(118, 118, 128, 0.36);
   --backdrop-dim: rgba(0, 0, 0, 0.6);
+  /* Обводка точки-бейджа: под цвет панели, на которой она лежит. */
+  --badge-ring: #0d0d0f;
 
-  /* Семантические акценты */
-  /* Пастельный персик: тёмный текст на заливке читается с контрастом > 10:1. */
-  --accent: #ffb4a2;
-  --accent-pressed: #f59a86;
-  --accent-text: #ffb4a2;
-  --accent-tint: rgba(255, 180, 162, 0.14);
-  --on-accent: #3a1408;
-  --focus: #ffb4a2;
   --green: #30d158;
   --red: #ff453a;
-
-  /* Градиент карточки ближайшего платежа: малиновый → персиковый, притемнён под белый текст */
-  --grad-card: linear-gradient(135deg, #d9486f 0%, #e98b4f 100%);
+  --on-green: #06240f;
+  --on-red: #ffffff;
 
   /* Лампочки: яркие цвета для свечения и отдельные — для текста */
   --lamp-green: #30d158;
@@ -58,9 +361,6 @@
   --glass-fill: rgba(44, 44, 50, 0.42);
   --glass-fill-thick: rgba(30, 30, 34, 0.8);
   --glass-fallback: rgba(28, 28, 32, 0.98);
-  --glass-blur: 16px;
-  --glass-blur-thick: 32px;
-  --glass-saturate: 190%;
   --glass-rim-strong: rgba(255, 255, 255, 0.42);
   --glass-rim-soft: rgba(255, 255, 255, 0.1);
   --glass-rim-far: rgba(255, 255, 255, 0.22);
@@ -69,14 +369,31 @@
   --glass-inner-shade: rgba(0, 0, 0, 0.3);
   --glass-shadow: none;
 
-  /* Радиусы и отступы (сетка 8pt) */
-  --radius-card: 24px;
-  --radius-group: 16px;
-  --radius-small: 12px;
-  --radius-tile: 10px;
-  --radius-sheet: 30px;
-  --screen-margin: 16px;
+  /* Линза нижней панели и бегунок сегментов */
+  --lens-fill: linear-gradient(180deg, rgba(255, 255, 255, 0.17), rgba(255, 255, 255, 0.07));
+  --lens-fill-active: rgba(255, 255, 255, 0.2);
+  --lens-rim: rgba(255, 255, 255, 0.22);
+  --lens-highlight: rgba(255, 255, 255, 0.28);
+  --lens-shade: rgba(0, 0, 0, 0.25);
+  --thumb-fill: linear-gradient(180deg, rgba(118, 118, 128, 0.62), rgba(99, 99, 104, 0.5));
+  /* Блик на акцентной заливке: кнопка «+» и выбранный день календаря. */
+  --accent-sheen: rgba(255, 255, 255, 0.38);
+  --accent-sheen-edge: rgba(255, 255, 255, 0.5);
 
-  --ease-spring: cubic-bezier(0.32, 1.28, 0.54, 1);
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Доли категорий в статистике */
+  --chart-1: #ffb4a2;
+  --chart-2: #5e9cff;
+  --chart-3: #30d158;
+  --chart-4: #ffd60a;
+  --chart-5: #bf8cff;
+  --chart-6: #ff6f91;
+  --chart-7: #6fd3d6;
+
+  --accent: var(--p-accent-d);
+  --accent-pressed: var(--p-pressed-d);
+  --accent-text: var(--p-accent-d);
+  --accent-tint: var(--p-tint-d);
+  --on-accent: var(--p-on-d);
+  --focus: var(--p-accent-d);
+  --grad-card: var(--p-grad-d);
 }

@@ -42,7 +42,7 @@
   padding: 0 28px 0 0;
   border: 0;
   background: var(--red);
-  color: #ffffff;
+  color: var(--on-red);
   /* Спрятана, пока строку не тянут: иначе красный край просвечивает сквозь сглаживание. */
   opacity: 0;
 }
@@ -63,7 +63,7 @@
   padding: 0 0 0 28px;
   border: 0;
   background: var(--green);
-  color: #06240f;
+  color: var(--on-green);
   opacity: 0;
 }
 

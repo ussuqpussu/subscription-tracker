@@ -1,4 +1,5 @@
 import { useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from 'react'
+import { tapHaptic } from '../utils/haptics'
 import styles from './BottomBar.module.css'
 import { CalendarIcon, ChartIcon, ListIcon, PlusIcon } from './icons'
 
@@ -44,6 +45,12 @@ export function BottomBar({ tab, onTabChange, onAdd }: BottomBarProps) {
   )
   const highlightedIndex = dragPosition?.index ?? selectedIndex
 
+  /** Смена раздела отзывается лёгким щелчком, как перелистывание в нативных приложениях. */
+  const selectTab = (next: AppTab) => {
+    if (next !== tab) tapHaptic()
+    onTabChange(next)
+  }
+
   const locate = (clientX: number) => {
     const rect = navRef.current!.getBoundingClientRect()
     const tabWidth = (rect.width - BAR_PADDING * 2) / TABS.length
@@ -77,7 +84,7 @@ export function BottomBar({ tab, onTabChange, onAdd }: BottomBarProps) {
     dragRef.current = null
     if (!drag.active) return
     setDragPosition(null)
-    if (event.type === 'pointerup') onTabChange(TABS[locate(event.clientX).index].value)
+    if (event.type === 'pointerup') selectTab(TABS[locate(event.clientX).index].value)
   }
 
   const lensStyle = {
@@ -106,7 +113,7 @@ export function BottomBar({ tab, onTabChange, onAdd }: BottomBarProps) {
               className={styles.tab}
               aria-pressed={tab === item.value}
               data-highlighted={index === highlightedIndex}
-              onClick={() => onTabChange(item.value)}
+              onClick={() => selectTab(item.value)}
             >
               {item.icon}
               <span className={styles.label}>{item.label}</span>

@@ -43,7 +43,7 @@
 
 /* Годовая сумма — полупрозрачной строкой под месячной. */
 .yearly {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--label-secondary);
   font-size: 15px;
   font-weight: 500;
 }

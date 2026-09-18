@@ -3,6 +3,7 @@ import type { Subscription } from '../types'
 import { addMonths, getMonthEvents, getMonthGrid, getMonthTotal, startOfMonth, type CalendarEvent } from '../utils/calendar'
 import { compareDates, getDueDate, toISODate } from '../utils/dateUtils'
 import { formatDate, formatMoney, formatMonthYear, pluralize } from '../utils/format'
+import { tapHaptic } from '../utils/haptics'
 import type { Rates } from '../utils/rates'
 import { getLamp } from '../utils/subscriptionUtils'
 import styles from './CalendarView.module.css'
@@ -103,7 +104,10 @@ export function CalendarView({ subscriptions, today, rates, hidden, onOpen, onMa
                 data-selected={compareDates(day, selected) === 0}
                 aria-label={`${formatDate(day, today)}${dayEvents.length > 0 ? `, событий: ${dayEvents.length}` : ''}`}
                 aria-pressed={compareDates(day, selected) === 0}
-                onClick={() => setSelected(day)}
+                onClick={() => {
+                  tapHaptic()
+                  setSelected(day)
+                }}
               >
                 <span className={styles.dayNumber}>{day.getDate()}</span>
                 <span className={styles.dots} aria-hidden="true">
