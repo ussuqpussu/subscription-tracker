@@ -69,12 +69,9 @@
   align-items: center;
   gap: 6px;
   min-width: 0;
-  overflow: hidden;
   color: var(--on-grad-muted);
   font-size: 13px;
   font-weight: 500;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* Лампочка не сжимается, когда подпись длинная. */
