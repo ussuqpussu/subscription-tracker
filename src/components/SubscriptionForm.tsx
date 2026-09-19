@@ -24,6 +24,7 @@ import {
   type SubscriptionDraft,
 } from '../utils/validation'
 import { CalendarPlusIcon, CheckIcon, ChevronDownIcon, TrashIcon } from './icons'
+import { useSheetDragHandle } from '../hooks/useSheetDragHandle'
 import { ReminderPicker } from './ReminderPicker'
 import { SegmentedControl, type SegmentOption } from './SegmentedControl'
 import { Sheet } from './Sheet'
@@ -120,11 +121,12 @@ function FormContent({
   const isEdit = subscription !== null
   const active = subscription?.status === 'active'
   const dueDate = subscription ? getDueDate(subscription) : null
+  const startDrag = useSheetDragHandle()
 
   return (
     <div className={styles.form}>
       <header className={styles.header}>
-        <span className={styles.grabber} aria-hidden="true" />
+        <span className={styles.grabber} aria-hidden="true" onPointerDown={startDrag} />
         <button type="button" className={styles.headerButton} onClick={onCancel}>
           Отмена
         </button>

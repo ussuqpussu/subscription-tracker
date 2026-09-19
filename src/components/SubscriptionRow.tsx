@@ -1,3 +1,5 @@
+import { AnimatePresence, motion } from 'motion/react'
+import { SPRING_DEFAULT } from '../motion/springs'
 import type { Subscription } from '../types'
 import { getDaysUntil, getDueDate } from '../utils/dateUtils'
 import { formatDate, formatDueText, formatMoney, formatPeriod, formatStatus } from '../utils/format'
@@ -63,14 +65,22 @@ export function SubscriptionRow({ subscription, today, onEdit, onExport, onMarkP
         <CalendarPlusIcon />
       </button>
 
-      {needsPayment && (
-        <div className={styles.payRow}>
-          <button type="button" className={`glass ${styles.pay}`} onClick={() => onMarkPaid(subscription)}>
-            <CheckIcon />
-            Оплачено
-          </button>
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {needsPayment && (
+          <motion.div
+            className={styles.payRow}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={SPRING_DEFAULT}
+          >
+            <button type="button" className={`glass ${styles.pay}`} onClick={() => onMarkPaid(subscription)}>
+              <CheckIcon />
+              Оплачено
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </li>
   )
 }

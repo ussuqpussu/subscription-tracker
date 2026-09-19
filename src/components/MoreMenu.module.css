@@ -35,8 +35,6 @@
   max-width: calc(100vw - 32px);
   padding: 8px;
   border-radius: 26px;
-  transform-origin: top right;
-  animation: menu-in 0.34s var(--ease-spring);
 }
 
 .item {
@@ -84,11 +82,4 @@
 .icon svg {
   width: 21px;
   height: 21px;
-}
-
-@keyframes menu-in {
-  from {
-    opacity: 0;
-    transform: scale(0.6);
-  }
 }

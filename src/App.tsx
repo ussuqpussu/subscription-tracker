@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState, type ChangeEvent } from 'react'
+import { MotionConfig } from 'motion/react'
 import styles from './App.module.css'
 import { BottomBar } from './components/BottomBar'
 import { ConfirmSheet, type ConfirmRequest } from './components/ConfirmSheet'
@@ -241,7 +242,7 @@ export default function App() {
   const openCreate = () => setEditor({ mode: 'create' })
 
   return (
-    <>
+    <MotionConfig reducedMotion="user">
       <NavBar title="Подписки" menuItems={menuItems} />
 
       <main className={styles.main}>
@@ -299,6 +300,6 @@ export default function App() {
           void handleRestoreFile(event)
         }}
       />
-    </>
+    </MotionConfig>
   )
 }

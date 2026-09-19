@@ -132,8 +132,11 @@
 
 .payRow {
   grid-column: 1 / -1;
-  padding: 0 16px 14px 45px;
-  margin-top: -4px;
+  overflow: hidden;
+}
+
+.payRow > .pay {
+  margin: -4px 16px 14px 45px;
 }
 
 .pay {

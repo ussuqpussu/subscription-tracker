@@ -1,4 +1,6 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
+import { SPRING_DEFAULT } from '../motion/springs'
 import { EllipsisIcon } from './icons'
 import styles from './MoreMenu.module.css'
 
@@ -79,35 +81,42 @@ export function MoreMenu({ items }: MoreMenuProps) {
         <EllipsisIcon />
       </button>
 
-      {open && (
-        <div
-          id={menuId}
-          ref={menuRef}
-          role="menu"
-          aria-label="Действия"
-          className={`glass-thick ${styles.menu}`}
-          onKeyDown={handleMenuKeyDown}
-        >
-          {items.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              role="menuitem"
-              className={styles.item}
-              data-destructive={item.destructive ? 'true' : undefined}
-              disabled={item.disabled}
-              onClick={() => {
-                setOpen(false)
-                triggerRef.current?.focus()
-                item.onSelect()
-              }}
-            >
-              <span className={styles.label}>{item.label}</span>
-              <span className={styles.icon}>{item.icon}</span>
-            </button>
-          ))}
-        </div>
-      )}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            id={menuId}
+            ref={menuRef}
+            role="menu"
+            aria-label="Действия"
+            className={`glass-thick ${styles.menu}`}
+            onKeyDown={handleMenuKeyDown}
+            style={{ transformOrigin: 'top right' }}
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.85 }}
+            transition={SPRING_DEFAULT}
+          >
+            {items.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                role="menuitem"
+                className={styles.item}
+                data-destructive={item.destructive ? 'true' : undefined}
+                disabled={item.disabled}
+                onClick={() => {
+                  setOpen(false)
+                  triggerRef.current?.focus()
+                  item.onSelect()
+                }}
+              >
+                <span className={styles.label}>{item.label}</span>
+                <span className={styles.icon}>{item.icon}</span>
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

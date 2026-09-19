@@ -16,7 +16,6 @@
 
 .dialog[open] {
   display: flex;
-  animation: sheet-in 0.42s var(--ease-out);
 }
 
 .dialog[open]::backdrop {
@@ -36,7 +35,6 @@
 .dialog[data-variant='alert'] {
   width: min(100% - 48px, 340px);
   margin: auto;
-  animation: alert-in 0.32s var(--ease-spring);
 }
 
 .dialog[data-variant='alert'] .surface {
@@ -48,25 +46,11 @@
   .dialog[data-variant='sheet'] {
     width: min(100% - 48px, 540px);
     margin: auto;
-    animation: alert-in 0.34s var(--ease-out);
   }
 
   .dialog[data-variant='sheet'] .surface {
     max-height: min(88dvh, 860px);
     border-radius: var(--radius-sheet);
-  }
-}
-
-@keyframes sheet-in {
-  from {
-    transform: translateY(100%);
-  }
-}
-
-@keyframes alert-in {
-  from {
-    opacity: 0;
-    transform: scale(1.08);
   }
 }
 
