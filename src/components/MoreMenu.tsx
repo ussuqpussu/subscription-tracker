@@ -2,6 +2,9 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode 
 import { PersonIcon } from './icons'
 import styles from './MoreMenu.module.css'
 
+/** Длительность keyframes menu-out в MoreMenu.module.css — размонтируем ровно когда она доиграет. */
+const EXIT_DURATION = 180
+
 export interface MenuItem {
   id: string
   label: string
@@ -20,9 +23,28 @@ interface MoreMenuProps {
 
 export function MoreMenu({ items, align = 'right' }: MoreMenuProps) {
   const [open, setOpen] = useState(false)
+  // Держим меню в DOM во время exit-анимации: open уже false, mounted — ещё нет.
+  const [mounted, setMounted] = useState(false)
+  const [closing, setClosing] = useState(false)
+  const exitTimerRef = useRef<number>(undefined)
   const menuId = useId()
   const triggerRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    window.clearTimeout(exitTimerRef.current)
+    if (open) {
+      setMounted(true)
+      setClosing(false)
+    } else if (mounted) {
+      setClosing(true)
+      exitTimerRef.current = window.setTimeout(() => setMounted(false), EXIT_DURATION)
+    }
+    // mounted нарочно не в зависимостях: реагируем только на смену open.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
+
+  useEffect(() => () => window.clearTimeout(exitTimerRef.current), [])
 
   useEffect(() => {
     if (!open) return
@@ -81,7 +103,7 @@ export function MoreMenu({ items, align = 'right' }: MoreMenuProps) {
         <PersonIcon />
       </button>
 
-      {open && (
+      {mounted && (
         <div
           id={menuId}
           ref={menuRef}
@@ -89,6 +111,7 @@ export function MoreMenu({ items, align = 'right' }: MoreMenuProps) {
           aria-label="Действия"
           className={`glass-thick ${styles.menu}`}
           data-align={align}
+          data-state={closing ? 'closing' : 'open'}
           onKeyDown={handleMenuKeyDown}
         >
           {items.map((item) => (

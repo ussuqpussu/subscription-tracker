@@ -1,4 +1,5 @@
 import { useEffect, useRef, type PointerEvent, type ReactNode } from 'react'
+import { animateSpring, DRAWER_SPRING, rubberband } from '../utils/spring'
 import styles from './Sheet.module.css'
 
 interface SheetProps {
@@ -22,6 +23,12 @@ interface Drag {
   lastY: number
   lastTime: number
   velocity: number
+  /** Высота окна на старте жеста — граница резины вверх и цель для translateY при закрытии. */
+  height: number
+  /** Последнее фактически отрисованное смещение (после резины) — точка старта пружины на отпускании. */
+  translate: number
+  /** Где окно было, когда за него схватились (обычно 0; не 0 — если схватили во время бега пружины). */
+  baseline: number
 }
 
 /**
@@ -33,12 +40,15 @@ export function Sheet({ open, onClose, labelledBy, children, variant = 'sheet' }
   const dialogRef = useRef<HTMLDialogElement>(null)
   const surfaceRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<Drag | null>(null)
+  const cancelSpringRef = useRef<(() => void) | null>(null)
+  const currentTranslateRef = useRef(0)
 
   useEffect(() => {
     const dialog = dialogRef.current
     if (!dialog) return
     // StrictMode вызывает эффект дважды: showModal на уже открытом окне бросает исключение.
     if (open && !dialog.open) {
+      currentTranslateRef.current = 0
       dialog.showModal()
       dialog.querySelector<HTMLElement>('[data-autofocus]')?.focus()
     } else if (!open && dialog.open) {
@@ -53,29 +63,34 @@ export function Sheet({ open, onClose, labelledBy, children, variant = 'sheet' }
     if (!target.closest('[data-sheet-grabber], [data-sheet-drag]') || target.closest(INTERACTIVE)) return
     // Иначе мышь при перетаскивании выделяет текст страницы.
     event.preventDefault()
+    cancelSpringRef.current?.()
+    cancelSpringRef.current = null
     dragRef.current = {
       pointerId: event.pointerId,
       startY: event.clientY,
       lastY: event.clientY,
       lastTime: event.timeStamp,
       velocity: 0,
+      height: surface.offsetHeight,
+      translate: currentTranslateRef.current,
+      baseline: currentTranslateRef.current,
     }
     surface.setPointerCapture(event.pointerId)
-    surface.dataset.dragging = 'true'
   }
 
   const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
     const drag = dragRef.current
     const surface = surfaceRef.current
     if (!drag || !surface || drag.pointerId !== event.pointerId) return
-    const offset = event.clientY - drag.startY
+    const offset = drag.baseline + (event.clientY - drag.startY)
     const elapsed = Math.max(1, event.timeStamp - drag.lastTime)
     drag.velocity = (event.clientY - drag.lastY) / elapsed
     drag.lastY = event.clientY
     drag.lastTime = event.timeStamp
-    // Вверх окно почти не тянется — упругое сопротивление, как в iOS.
-    const translate = offset > 0 ? offset : -Math.sqrt(-offset) * 2
-    surface.style.transform = `translateY(${translate}px)`
+    // Вверх — резина у границы (§9). Вниз — 1:1, это и есть жест закрытия (§2).
+    drag.translate = offset > 0 ? offset : -rubberband(-offset, drag.height)
+    currentTranslateRef.current = drag.translate
+    surface.style.transform = `translateY(${drag.translate}px)`
   }
 
   const handlePointerEnd = (event: PointerEvent<HTMLDivElement>) => {
@@ -83,22 +98,26 @@ export function Sheet({ open, onClose, labelledBy, children, variant = 'sheet' }
     const surface = surfaceRef.current
     if (!drag || !surface || drag.pointerId !== event.pointerId) return
     dragRef.current = null
-    delete surface.dataset.dragging
-    const offset = event.clientY - drag.startY
-    const dismiss = offset > DISMISS_DISTANCE || (offset > 24 && drag.velocity > DISMISS_VELOCITY)
-    if (!dismiss || event.type === 'pointercancel') {
-      surface.style.transform = ''
-      return
-    }
-    surface.style.transform = 'translateY(100%)'
-    let closed = false
-    const finish = () => {
-      if (closed) return
-      closed = true
-      onClose()
-    }
-    surface.addEventListener('transitionend', finish, { once: true })
-    window.setTimeout(finish, 320)
+    const offset = drag.baseline + (event.clientY - drag.startY)
+    const dismiss =
+      event.type !== 'pointercancel' &&
+      (offset > DISMISS_DISTANCE || (offset > 24 && drag.velocity > DISMISS_VELOCITY))
+    const velocity = drag.velocity * 1000 // px/мс → px/с
+    cancelSpringRef.current = animateSpring({
+      from: drag.translate,
+      to: dismiss ? drag.height : 0,
+      velocity,
+      ...DRAWER_SPRING,
+      onUpdate: (value) => {
+        currentTranslateRef.current = value
+        surface.style.transform = `translateY(${value}px)`
+      },
+      onDone: () => {
+        cancelSpringRef.current = null
+        if (dismiss) onClose()
+        else surface.style.transform = ''
+      },
+    })
   }
 
   return (

@@ -3,6 +3,7 @@ import type { Subscription } from '../types'
 import { getDaysUntil, getDueDate } from '../utils/dateUtils'
 import { formatDate, formatDueText, formatMoney, formatPeriod, formatStatus } from '../utils/format'
 import { tapHaptic } from '../utils/haptics'
+import { animateSpring, DRAWER_SPRING, project, rubberband } from '../utils/spring'
 import { getLamp } from '../utils/subscriptionUtils'
 import { CalendarPlusIcon, CheckIcon, TrashIcon } from './icons'
 import { Logo } from './Logo'
@@ -32,6 +33,9 @@ interface Drag {
   base: number
   offset: number
   active: boolean
+  lastX: number
+  lastTime: number
+  velocity: number
 }
 
 export function SubscriptionRow({
@@ -44,6 +48,8 @@ export function SubscriptionRow({
 }: SubscriptionRowProps) {
   const contentRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<Drag | null>(null)
+  const cancelSpringRef = useRef<(() => void) | null>(null)
+  const currentOffsetRef = useRef(0)
   const suppressClickRef = useRef(false)
   /** Какое действие открыто свайпом: удаление справа или отметка оплаты слева. */
   const [revealed, setRevealed] = useState<'none' | 'delete' | 'paid'>('none')
@@ -71,8 +77,10 @@ export function SubscriptionRow({
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (event.pointerType === 'mouse' && event.button !== 0) return
     suppressClickRef.current = false
-    // Влево — удаление (смещение отрицательное), вправо — отметка оплаты.
-    const base = revealed === 'delete' ? -REVEAL_WIDTH : revealed === 'paid' ? REVEAL_WIDTH : 0
+    cancelSpringRef.current?.()
+    cancelSpringRef.current = null
+    // Стартуем от текущего фактического положения — важно, если схватили во время бега пружины.
+    const base = currentOffsetRef.current
     dragRef.current = {
       pointerId: event.pointerId,
       startX: event.clientX,
@@ -80,6 +88,9 @@ export function SubscriptionRow({
       base,
       offset: base,
       active: false,
+      lastX: event.clientX,
+      lastTime: event.timeStamp,
+      velocity: 0,
     }
   }
 
@@ -98,11 +109,15 @@ export function SubscriptionRow({
       if (Math.abs(dx) < DRAG_START) return
       drag.active = true
       content.setPointerCapture(event.pointerId)
-      content.dataset.dragging = 'true'
     }
-    // Вправо строка тянется, только если платёж можно отметить оплаченным.
-    const offset = drag.base + dx
-    drag.offset = needsPayment ? offset : Math.min(0, offset)
+    const elapsed = Math.max(1, event.timeStamp - drag.lastTime)
+    drag.velocity = (event.clientX - drag.lastX) / elapsed
+    drag.lastX = event.clientX
+    drag.lastTime = event.timeStamp
+    // Вправо строка тянется свободно, только если платёж можно отметить оплаченным — иначе резина у границы (§9).
+    const raw = drag.base + dx
+    drag.offset = needsPayment || raw <= 0 ? raw : rubberband(raw, content.offsetWidth)
+    currentOffsetRef.current = drag.offset
     // Показываем кнопку той стороны, в которую тянут.
     content.dataset.direction = drag.offset < 0 ? 'delete' : 'paid'
     content.style.transform = `translateX(${drag.offset}px)`
@@ -116,16 +131,31 @@ export function SubscriptionRow({
     if (!drag.active) return
     // После свайпа браузер может прислать click: он не должен открывать подписку.
     suppressClickRef.current = true
-    delete content.dataset.dragging
     delete content.dataset.direction
-    content.style.transform = ''
-    const distance = Math.abs(drag.offset)
-    const action = drag.offset < 0 ? 'delete' : 'paid'
+    const velocity = drag.velocity * 1000 // px/мс → px/с
+    // Быстрый короткий флик коммитит действие так же, как медленная протяжка на всю ширину (§6).
+    const projected = drag.offset + project(velocity)
+    const distance = Math.abs(projected)
+    const action = projected < 0 ? 'delete' : 'paid'
     const fullSwipe = event.type === 'pointerup' && distance > content.offsetWidth * FULL_SWIPE
     const next = !fullSwipe && distance > REVEAL_WIDTH / 2 ? action : 'none'
     // Кнопка выехала из-под строки — отзываемся щелчком, как нативный свайп в «Почте».
     if (next !== 'none' && next !== revealed) tapHaptic()
     setRevealed(next)
+    cancelSpringRef.current = animateSpring({
+      from: drag.offset,
+      to: next === 'delete' ? -REVEAL_WIDTH : next === 'paid' ? REVEAL_WIDTH : 0,
+      velocity,
+      ...DRAWER_SPRING,
+      onUpdate: (value) => {
+        currentOffsetRef.current = value
+        content.style.transform = `translateX(${value}px)`
+      },
+      onDone: () => {
+        cancelSpringRef.current = null
+        content.style.transform = ''
+      },
+    })
     if (!fullSwipe) return
     if (action === 'delete') onDelete(subscription)
     else {

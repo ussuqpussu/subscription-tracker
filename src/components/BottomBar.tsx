@@ -1,5 +1,6 @@
 import { useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from 'react'
 import { tapHaptic } from '../utils/haptics'
+import { animateSpring, MOVE_SPRING } from '../utils/spring'
 import styles from './BottomBar.module.css'
 import { CalendarIcon, ChartIcon, ListIcon, PlusIcon } from './icons'
 
@@ -32,18 +33,25 @@ interface Drag {
 /**
  * Плавающая стеклянная панель разделов в духе Telegram: выбранный раздел подсвечивает
  * стеклянная линза, её можно вести пальцем. Справа — кнопка добавления подписки.
+ *
+ * Во время жеста и на снэпе после отпускания transform линзы задаётся императивно (ref),
+ * а не через React style — иначе перерисовки родителя перебивали бы кадры пружины.
+ * В состоянии покоя (нет ни жеста, ни бегущей пружины) transform снова отдаётся CSS
+ * (`--index` в lensStyle) — так простой тап по вкладке тоже плавно едет с пружиной.
  */
 export function BottomBar({ tab, onTabChange, onAdd }: BottomBarProps) {
   const navRef = useRef<HTMLElement>(null)
+  const lensRef = useRef<HTMLSpanElement>(null)
   const dragRef = useRef<Drag | null>(null)
-  // Во время перетаскивания: смещение линзы в px и раздел под пальцем.
-  const [dragPosition, setDragPosition] = useState<{ x: number; index: number } | null>(null)
+  const cancelSpringRef = useRef<(() => void) | null>(null)
+  // Только для подсветки вкладки под пальцем во время жеста — сама линза едет мимо React.
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
 
   const selectedIndex = Math.max(
     0,
     TABS.findIndex((item) => item.value === tab),
   )
-  const highlightedIndex = dragPosition?.index ?? selectedIndex
+  const highlightedIndex = dragIndex ?? selectedIndex
 
   /** Смена раздела отзывается лёгким щелчком, как перелистывание в нативных приложениях. */
   const selectTab = (next: AppTab) => {
@@ -51,47 +59,71 @@ export function BottomBar({ tab, onTabChange, onAdd }: BottomBarProps) {
     onTabChange(next)
   }
 
+  const tabWidth = () => {
+    const rect = navRef.current!.getBoundingClientRect()
+    return (rect.width - BAR_PADDING * 2) / TABS.length
+  }
+
   const locate = (clientX: number) => {
     const rect = navRef.current!.getBoundingClientRect()
-    const tabWidth = (rect.width - BAR_PADDING * 2) / TABS.length
+    const width = tabWidth()
     const local = clientX - rect.left - BAR_PADDING
     return {
-      x: Math.min(Math.max(local - tabWidth / 2, 0), tabWidth * (TABS.length - 1)),
-      index: Math.min(Math.max(Math.floor(local / tabWidth), 0), TABS.length - 1),
+      x: Math.min(Math.max(local - width / 2, 0), width * (TABS.length - 1)),
+      index: Math.min(Math.max(Math.floor(local / width), 0), TABS.length - 1),
     }
   }
 
   const handlePointerDown = (event: PointerEvent<HTMLElement>) => {
     if (event.button !== 0) return
+    cancelSpringRef.current?.()
+    cancelSpringRef.current = null
     dragRef.current = { pointerId: event.pointerId, startX: event.clientX, active: false }
   }
 
   const handlePointerMove = (event: PointerEvent<HTMLElement>) => {
     const drag = dragRef.current
-    if (!drag || drag.pointerId !== event.pointerId) return
+    const lens = lensRef.current
+    if (!drag || !lens || drag.pointerId !== event.pointerId) return
     if (!drag.active) {
       if (Math.abs(event.clientX - drag.startX) < DRAG_THRESHOLD) return
       drag.active = true
       // Захват указателя: дальше события идут панели, а обычный клик по кнопке не сработает.
       event.currentTarget.setPointerCapture(event.pointerId)
+      lens.dataset.dragging = 'true'
     }
-    setDragPosition(locate(event.clientX))
+    const { x, index } = locate(event.clientX)
+    lens.style.transform = `translateX(${x}px) scale(1.12)`
+    setDragIndex(index)
   }
 
   const handlePointerEnd = (event: PointerEvent<HTMLElement>) => {
     const drag = dragRef.current
-    if (!drag || drag.pointerId !== event.pointerId) return
+    const lens = lensRef.current
+    if (!drag || !lens || drag.pointerId !== event.pointerId) return
     dragRef.current = null
     if (!drag.active) return
-    setDragPosition(null)
-    if (event.type === 'pointerup') selectTab(TABS[locate(event.clientX).index].value)
+    const { x: fromX, index } = locate(event.clientX)
+    // Тап выбирает вкладку под пальцем; pointercancel возвращает линзу туда, где она была.
+    const finalIndex = event.type === 'pointerup' ? index : selectedIndex
+    if (event.type === 'pointerup') selectTab(TABS[index].value)
+    cancelSpringRef.current = animateSpring({
+      from: fromX,
+      to: finalIndex * tabWidth(),
+      ...MOVE_SPRING,
+      onUpdate: (value) => {
+        lens.style.transform = `translateX(${value}px) scale(1)`
+      },
+      onDone: () => {
+        cancelSpringRef.current = null
+        delete lens.dataset.dragging
+        lens.style.transform = ''
+        setDragIndex(null)
+      },
+    })
   }
 
-  const lensStyle = {
-    '--count': TABS.length,
-    '--index': selectedIndex,
-    ...(dragPosition ? { transform: `translateX(${dragPosition.x}px) scale(1.12)` } : {}),
-  } as CSSProperties
+  const lensStyle = { '--count': TABS.length, '--index': selectedIndex } as CSSProperties
 
   return (
     <div className={styles.dock}>
@@ -105,7 +137,7 @@ export function BottomBar({ tab, onTabChange, onAdd }: BottomBarProps) {
           onPointerUp={handlePointerEnd}
           onPointerCancel={handlePointerEnd}
         >
-          <span className={styles.lens} data-dragging={dragPosition !== null} style={lensStyle} aria-hidden="true" />
+          <span ref={lensRef} className={styles.lens} style={lensStyle} aria-hidden="true" />
           {TABS.map((item, index) => (
             <button
               key={item.value}

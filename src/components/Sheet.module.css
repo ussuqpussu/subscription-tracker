@@ -30,12 +30,6 @@
   max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 10px);
   border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
   overflow: hidden;
-  transition: transform 0.32s var(--ease-out);
-}
-
-/* Во время свайпа окно идёт за пальцем без задержки. */
-.surface[data-dragging='true'] {
-  transition: none;
 }
 
 /* Полоска сверху: видимая часть маленькая, область касания — шире и выше. */
