@@ -28,7 +28,7 @@ function sub(overrides: Partial<Subscription> & Pick<Subscription, 'id'>): Subsc
 
 describe('расписание пушей', () => {
   it('за каждое число дней до каждого платежа в пределах 120 дней', () => {
-    const reminders = buildPushReminders([sub({ id: 'k', name: 'Кинопоиск' })], now)
+    const reminders = buildPushReminders([sub({ id: 'k', name: 'Кинопоиск' })], now, undefined, 120)
     // 17.09 10:00 уже прошло; дальше 19.09, затем по два на 20.10, 20.11 и 20.12. 20.01 за горизонтом.
     expect(reminders.map((item) => item.at)).toEqual([
       at(9, 19),
