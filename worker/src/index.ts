@@ -243,7 +243,11 @@ const LOGO_MISS_TTL_SECONDS = 60 * 60
 const LOGO_FETCH_TIMEOUT_MS = 5000
 /** Сколько лучших кандидатов пробуем скачать: у бесплатного тарифа 50 исходящих запросов. */
 const LOGO_MAX_ATTEMPTS = 8
-const BOT_HEADERS = { 'User-Agent': 'Mozilla/5.0 (compatible; SubscriptionTrackerLogo/1.0)' }
+// Некоторые сайты (ChatGPT и т.п.) отдают 403 узнаваемым ботам — притворяемся обычным браузером.
+const BOT_HEADERS = {
+  'User-Agent':
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+}
 
 function fetchWithTimeout(url: string, accept: string): Promise<Response> {
   return fetch(url, {
