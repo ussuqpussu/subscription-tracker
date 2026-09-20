@@ -2,11 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "dev",
-      "runtimeExecutable": "C:\\PROGRA~1\\nodejs\\node.exe",
-      "runtimeArgs": ["scripts/dev-server.mjs"],
-      "port": 5173,
-      "url": "http://127.0.0.1:5173"
+      "name": "subscription-tracker",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "5173", "--strictPort", "--host", "127.0.0.1"],
+      "port": 5173
     }
   ]
 }
