@@ -28,9 +28,9 @@
   min-height: 44px;
   padding: 0 16px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--fill);
-  font-size: 17px;
+  font-size: 1.0625rem;
 }
 
 .input::placeholder {
@@ -46,10 +46,10 @@
   min-height: 44px;
   padding: 0 16px;
   border: 1px solid var(--hairline-strong);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: transparent;
   color: var(--label);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
 }
 
@@ -59,10 +59,10 @@
 
 .error {
   color: var(--text-red);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .summary {
   color: var(--label-secondary);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }

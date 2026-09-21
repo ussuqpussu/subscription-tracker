@@ -132,7 +132,7 @@
 
 .name {
   overflow: hidden;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 500;
   line-height: 22px;
   text-overflow: ellipsis;
@@ -145,7 +145,7 @@
   align-items: flex-start;
   gap: 6px;
   min-width: 0;
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 18px;
 }
 
@@ -166,7 +166,7 @@
 .meta {
   overflow: hidden;
   color: var(--label-secondary);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 18px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -180,7 +180,7 @@
 }
 
 .price {
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
   line-height: 22px;
   white-space: nowrap;
@@ -192,7 +192,7 @@
 
 .period {
   color: var(--label-secondary);
-  font-size: 13px;
+  font-size: 0.8125rem;
   white-space: nowrap;
 }
 
@@ -213,9 +213,9 @@
   min-height: 36px;
   padding: 0 16px 0 12px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   color: var(--label);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   transition: transform 0.3s var(--ease-spring);
 }

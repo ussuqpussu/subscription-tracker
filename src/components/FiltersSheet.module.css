@@ -16,7 +16,7 @@
 
 .title {
   grid-column: 2;
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -26,10 +26,10 @@
   min-height: 44px;
   padding: 0 12px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: transparent;
   color: var(--accent-text);
-  font-size: 17px;
+  font-size: 1.0625rem;
   transition: background-color 0.15s ease;
 }
 
@@ -63,7 +63,7 @@
   padding: 0 4px;
   color: var(--label-secondary);
   font-family: var(--font-text);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 500;
 }
 
@@ -142,14 +142,14 @@
 
 .rowLabel {
   overflow: hidden;
-  font-size: 17px;
+  font-size: 1.0625rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .rowMeta {
   color: var(--label-secondary);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .check {

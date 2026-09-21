@@ -20,7 +20,7 @@
   flex: 1;
   max-width: 360px;
   padding: 4px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   pointer-events: auto;
   /* Горизонтальный жест по панели ведёт линзу, а не прокручивает страницу. */
   touch-action: none;
@@ -35,7 +35,7 @@
   bottom: 4px;
   left: 4px;
   width: calc((100% - 8px) / var(--count));
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--lens-fill);
   box-shadow:
     inset 0 0 0 0.5px var(--lens-rim),
@@ -68,7 +68,7 @@
   min-height: 52px;
   padding: 4px 2px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: transparent;
   color: var(--label-secondary);
   transition:
@@ -96,7 +96,7 @@
 .label {
   overflow: hidden;
   max-width: 100%;
-  font-size: 10px;
+  font-size: 0.625rem;
   max-width: 100%;
   font-weight: 600;
   line-height: 1.2;
@@ -114,7 +114,7 @@
   height: 60px;
   padding: 0;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background:
     radial-gradient(120% 90% at 50% -20%, var(--accent-sheen), transparent 60%),
     var(--accent);

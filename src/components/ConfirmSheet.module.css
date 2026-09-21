@@ -13,14 +13,14 @@
 }
 
 .title {
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 600;
   line-height: 1.25;
 }
 
 .message {
   color: var(--label-secondary);
-  font-size: 15px;
+  font-size: 0.9375rem;
   line-height: 1.4;
 }
 
@@ -32,15 +32,18 @@
 .button {
   min-height: 48px;
   padding: 0 16px;
-  border: 1px solid var(--hairline-strong);
-  border-radius: 999px;
-  background: transparent;
+  border-radius: var(--radius-pill);
   color: var(--label);
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 600;
   transition:
     transform 0.18s var(--ease-out),
     background-color 0.2s ease;
+}
+
+/* Кнопка уже внутри стеклянной шторки — своя бликовая кромка поверх чужой смотрится белым кольцом. */
+button.button::before {
+  content: none;
 }
 
 .button:active {
@@ -52,12 +55,12 @@
   color: var(--text-red);
 }
 
+/* Акцентная кнопка — тонированное стекло, а не плоская заливка: остаётся Liquid Glass, не превращается в обычную кнопку. */
 .button[data-tone='primary'] {
-  border-color: transparent;
-  background: var(--accent);
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
   color: var(--on-accent);
 }
 
 .button[data-tone='primary']:active {
-  background: var(--accent-pressed);
+  background: color-mix(in srgb, var(--accent-pressed) 65%, transparent);
 }

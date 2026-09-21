@@ -17,10 +17,10 @@
   min-height: 28px;
   padding: 0 12px;
   border: 1px solid var(--hairline);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--surface-2);
   color: var(--label-secondary);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 500;
   line-height: 1;
   white-space: nowrap;
@@ -36,10 +36,10 @@
   min-height: 44px;
   padding: 0 20px;
   border: 1px solid var(--hairline-strong);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: transparent;
   color: var(--label);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   line-height: 1;
   white-space: nowrap;
@@ -72,10 +72,10 @@
   min-height: 36px;
   padding: 0 14px;
   border: 1px solid var(--hairline-strong);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: transparent;
   color: var(--label);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 500;
   line-height: 1;
   white-space: nowrap;
@@ -108,10 +108,10 @@
   min-height: 36px;
   padding: 0 30px 0 12px;
   border: 1px solid var(--hairline-strong);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: transparent;
   color: var(--label);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -136,7 +136,7 @@
   height: 44px;
   padding: 0;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: transparent;
   color: var(--label-secondary);
   transition:

@@ -16,7 +16,7 @@
 
 .title {
   grid-column: 2;
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -26,10 +26,10 @@
   min-height: 44px;
   padding: 0 12px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: transparent;
   color: var(--accent-text);
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 600;
 }
 
@@ -53,7 +53,7 @@
 .groupTitle {
   padding: 0 16px;
   color: var(--label-secondary);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 500;
 }
 
@@ -94,7 +94,7 @@
 
 .rowLabel {
   flex: 1;
-  font-size: 17px;
+  font-size: 1.0625rem;
 }
 
 /* Код читают вслух и переписывают: крупно, моноширинно, с разрядкой. */
@@ -102,7 +102,7 @@
   padding: 14px 16px;
   border-top: 1px solid var(--separator);
   font-family: var(--font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
-  font-size: 19px;
+  font-size: 1.1875rem;
   letter-spacing: 0.08em;
   word-break: break-all;
 }
@@ -113,7 +113,7 @@
   border: 0;
   background: transparent;
   color: var(--label);
-  font-size: 17px;
+  font-size: 1.0625rem;
   letter-spacing: 0.06em;
 }
 
@@ -132,7 +132,7 @@
   border: 0;
   background: transparent;
   color: var(--accent-text);
-  font-size: 17px;
+  font-size: 1.0625rem;
   text-align: left;
   transition: background-color 0.15s ease;
 }
@@ -158,14 +158,14 @@
 .hint {
   padding: 0 16px;
   color: var(--label-secondary);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.4;
 }
 
 .message {
   padding: 0 16px;
   color: var(--label);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.4;
 }
 

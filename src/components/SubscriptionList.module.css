@@ -12,14 +12,14 @@
 
 .title {
   font-family: var(--font-text);
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 500;
 }
 
 .count {
   flex: 1;
   color: var(--label-secondary);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 500;
 }
 
@@ -32,7 +32,7 @@
   height: 40px;
   padding: 0;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   color: var(--label);
   transition: transform 0.3s var(--ease-spring);
 }

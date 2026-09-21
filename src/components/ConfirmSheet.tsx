@@ -29,7 +29,7 @@ export function ConfirmSheet({ request, onClose }: ConfirmSheetProps) {
           <div className={styles.actions}>
             <button
               type="button"
-              className={styles.button}
+              className={`glass ${styles.button}`}
               data-tone={request.destructive ? 'destructive' : 'primary'}
               onClick={() => {
                 onClose()
@@ -38,7 +38,7 @@ export function ConfirmSheet({ request, onClose }: ConfirmSheetProps) {
             >
               {request.confirmLabel}
             </button>
-            <button type="button" className={styles.button} data-autofocus onClick={onClose}>
+            <button type="button" className={`glass ${styles.button}`} data-autofocus onClick={onClose}>
               Отмена
             </button>
           </div>

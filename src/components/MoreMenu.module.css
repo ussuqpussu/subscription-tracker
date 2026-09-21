@@ -10,7 +10,7 @@
   height: 44px;
   padding: 0;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   color: var(--label);
   transition: transform 0.3s var(--ease-spring);
 }
@@ -61,7 +61,7 @@
   border-radius: var(--radius-small);
   background: transparent;
   color: var(--label);
-  font-size: 17px;
+  font-size: 1.0625rem;
   text-align: left;
   transition: background-color 0.15s ease;
 }

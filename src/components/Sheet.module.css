@@ -52,7 +52,7 @@
   left: 29px;
   width: 38px;
   height: 5px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--fill-strong);
 }
 

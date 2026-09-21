@@ -16,7 +16,7 @@
 
 /* В списке остаётся один ряд — капсуле идёт круглая форма. */
 .header[data-mode='list'] {
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 .monthRow {
@@ -27,7 +27,7 @@
 
 .month {
   font-family: var(--font-rounded);
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 600;
   text-align: center;
   /* Сентябрь 2026 → Сентябрь 2026 с заглавной. */
@@ -41,7 +41,7 @@
   height: 44px;
   padding: 0;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: transparent;
   color: var(--accent-text);
   transition: transform 0.3s var(--ease-spring);
@@ -70,7 +70,7 @@
 
 .weekdays {
   color: var(--label-secondary);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 500;
   text-align: center;
 }
@@ -111,7 +111,7 @@
   height: 32px;
   border-radius: 50%;
   font-family: var(--font-rounded);
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 500;
 }
 
@@ -160,14 +160,14 @@
 
 .more {
   color: var(--label-secondary);
-  font-size: 9px;
+  font-size: 0.5625rem;
   line-height: 1;
 }
 
 .total {
   padding: 0 4px;
   color: var(--label-secondary);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .dayList {
@@ -200,7 +200,7 @@
 
 .dayTitle {
   font-family: var(--font-text);
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 500;
 }
 
@@ -208,9 +208,9 @@
   min-height: 36px;
   padding: 0 16px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   color: var(--label);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   transition: transform 0.3s var(--ease-spring);
 }
@@ -222,7 +222,7 @@
 .empty {
   padding: 0 4px;
   color: var(--label-secondary);
-  font-size: 15px;
+  font-size: 0.9375rem;
 }
 
 .events {
@@ -266,7 +266,7 @@
 
 .eventName {
   overflow: hidden;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -277,11 +277,11 @@
   align-items: center;
   gap: 6px;
   color: var(--label-secondary);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .eventAmount {
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -294,9 +294,9 @@
   margin: 0 16px 14px 68px;
   padding: 0 16px 0 12px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   color: var(--label);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   transition: transform 0.3s var(--ease-spring);
 }
@@ -319,6 +319,6 @@
   .dayNumber {
     width: 30px;
     height: 30px;
-    font-size: 15px;
+    font-size: 0.9375rem;
   }
 }

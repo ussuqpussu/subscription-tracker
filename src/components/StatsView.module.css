@@ -15,7 +15,7 @@
 
 .cardTitle {
   font-family: var(--font-text);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 500;
 }
 
@@ -33,18 +33,18 @@
 
 .spentLabel {
   color: var(--label-secondary);
-  font-size: 15px;
+  font-size: 0.9375rem;
 }
 
 .spentValue {
   font-family: var(--font-rounded);
-  font-size: 22px;
+  font-size: 1.375rem;
   font-weight: 600;
 }
 
 .hint {
   color: var(--label-secondary);
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.4;
 }
 
@@ -59,13 +59,13 @@
 
 .forecastMonth {
   color: var(--label-secondary);
-  font-size: 15px;
+  font-size: 0.9375rem;
   text-transform: capitalize;
 }
 
 .forecastValue {
   font-family: var(--font-rounded);
-  font-size: 22px;
+  font-size: 1.375rem;
   font-weight: 600;
 }
 
@@ -106,7 +106,7 @@
 .barFill {
   width: 8px;
   min-height: 2px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--label-tertiary);
   transition: height 0.32s var(--ease-out);
 }
@@ -119,7 +119,7 @@
   overflow: hidden;
   max-width: 100%;
   color: var(--label-secondary);
-  font-size: 10px;
+  font-size: 0.625rem;
   line-height: 1;
   white-space: nowrap;
 }
@@ -155,7 +155,7 @@
   display: grid;
   place-items: center;
   font-family: var(--font-rounded);
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 600;
   text-align: center;
 }
@@ -172,7 +172,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .dot {
@@ -209,7 +209,7 @@
 
 .tip {
   padding: 14px 16px;
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.4;
 }
 

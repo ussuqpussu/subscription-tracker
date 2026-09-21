@@ -17,7 +17,7 @@
 
 .title {
   grid-column: 2;
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -27,10 +27,10 @@
   min-height: 44px;
   padding: 0 12px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: transparent;
   color: var(--accent-text);
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 600;
 }
 
@@ -72,7 +72,7 @@
   padding: 0 16px 14px 60px;
   margin-top: -8px;
   color: var(--label);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.4;
 }
 
@@ -111,14 +111,14 @@
 
 .rowLabel {
   flex: 1;
-  font-size: 17px;
+  font-size: 1.0625rem;
 }
 
 .state {
   padding: 0 16px 14px 60px;
   margin-top: -6px;
   color: var(--label-secondary);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.4;
 }
 
@@ -140,7 +140,7 @@
   border: 0;
   background: transparent;
   color: var(--accent-text);
-  font-size: 17px;
+  font-size: 1.0625rem;
   text-align: left;
   transition: background-color 0.15s ease;
 }
@@ -166,6 +166,6 @@
 .hint {
   padding: 0 16px;
   color: var(--label-secondary);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.4;
 }

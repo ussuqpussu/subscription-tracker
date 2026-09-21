@@ -23,6 +23,7 @@
   --radius-small: 12px;
   --radius-tile: 10px;
   --radius-sheet: 30px;
+  --radius-pill: 999px;
   --screen-margin: 16px;
 
   --ease-spring: cubic-bezier(0.32, 1.28, 0.54, 1);
@@ -396,4 +397,31 @@
   --on-accent: var(--p-on-d);
   --focus: var(--p-accent-d);
   --grad-card: var(--p-grad-d);
+}
+
+/* Настройки → Спец. возможности → Повысить контраст: тонкие линии и заливки становятся заметнее. */
+@media (prefers-contrast: more) {
+  :root,
+  :root[data-theme='dark'] {
+    --hairline: rgba(255, 255, 255, 0.32);
+    --hairline-strong: rgba(255, 255, 255, 0.48);
+    --separator: rgba(255, 255, 255, 0.32);
+    --fill-strong: rgba(118, 118, 128, 0.5);
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --hairline: rgba(60, 60, 67, 0.36);
+      --hairline-strong: rgba(60, 60, 67, 0.52);
+      --separator: rgba(60, 60, 67, 0.36);
+      --fill-strong: rgba(118, 118, 128, 0.32);
+    }
+  }
+
+  :root[data-theme='light'] {
+    --hairline: rgba(60, 60, 67, 0.36);
+    --hairline-strong: rgba(60, 60, 67, 0.52);
+    --separator: rgba(60, 60, 67, 0.36);
+    --fill-strong: rgba(118, 118, 128, 0.32);
+  }
 }

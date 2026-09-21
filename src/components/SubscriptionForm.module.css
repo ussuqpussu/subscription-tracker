@@ -16,7 +16,7 @@
 }
 
 .title {
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 600;
   text-align: center;
   white-space: nowrap;
@@ -27,10 +27,10 @@
   min-height: 44px;
   padding: 0 12px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: transparent;
   color: var(--accent-text);
-  font-size: 17px;
+  font-size: 1.0625rem;
   transition: background-color 0.15s ease;
 }
 
@@ -46,7 +46,7 @@
   padding: 0 16px;
   background: var(--accent);
   color: var(--on-accent);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
 }
 
@@ -76,7 +76,7 @@
 .groupTitle {
   padding: 0 16px;
   color: var(--label-secondary);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 500;
 }
 
@@ -98,14 +98,14 @@
 
 .historyValue {
   color: var(--label-secondary);
-  font-size: 15px;
+  font-size: 0.9375rem;
   white-space: nowrap;
 }
 
 .hint {
   padding: 0 16px 4px;
   color: var(--label-secondary);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.35;
 }
 
@@ -127,7 +127,7 @@
   padding: 0 16px 0 0;
   border: 0;
   background: transparent;
-  font-size: 19px;
+  font-size: 1.1875rem;
   font-weight: 600;
 }
 
@@ -142,7 +142,7 @@
 
 .rowLabel {
   flex: none;
-  font-size: 17px;
+  font-size: 1.0625rem;
 }
 
 .rowControl {
@@ -160,7 +160,7 @@
   border: 0;
   background: transparent;
   color: var(--label);
-  font-size: 17px;
+  font-size: 1.0625rem;
   text-align: right;
 }
 
@@ -217,7 +217,7 @@
   height: 28px;
   padding: 0;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--fill);
   color: var(--label-secondary);
   transition: transform 0.18s var(--ease-out);
@@ -249,7 +249,7 @@
   border: 0;
   background: transparent;
   color: var(--label);
-  font-size: 17px;
+  font-size: 1.0625rem;
   text-align: right;
   text-align-last: right;
 }
@@ -279,7 +279,7 @@
 
 .suggestions :global(.chip) {
   min-height: 34px;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .notes {
@@ -288,7 +288,7 @@
   padding: 14px 16px;
   border: 0;
   background: transparent;
-  font-size: 17px;
+  font-size: 1.0625rem;
   line-height: 1.35;
   resize: vertical;
 }
@@ -296,7 +296,7 @@
 .error {
   padding: 0 16px 12px;
   color: var(--text-red);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 /* Готовые сервисы: ряд с переносом, чтобы был виден весь список. */
@@ -313,10 +313,10 @@
   min-height: 40px;
   padding: 4px 14px 4px 6px;
   border: 1px solid var(--hairline-strong);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: transparent;
   color: var(--label);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 500;
   transition: transform 0.18s var(--ease-out);
 }
@@ -342,7 +342,7 @@
 
 .logoActions :global(.chip) {
   min-height: 34px;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .logoButton {
@@ -364,7 +364,7 @@
   border: 0;
   background: transparent;
   color: var(--label);
-  font-size: 17px;
+  font-size: 1.0625rem;
   text-align: left;
   text-decoration: none;
   transition: background-color 0.15s ease;
@@ -392,7 +392,7 @@
 
 .actionHint {
   color: var(--label-secondary);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .destructive,
@@ -406,6 +406,6 @@
   }
 
   .rowLabel {
-    font-size: 16px;
+    font-size: 1rem;
   }
 }
